@@ -52,7 +52,6 @@ struct img_1D_t *edge_detection_1D(const struct img_1D_t *input_img)
     printf("width: %d\n", input_img->width);
     printf("height: %d\n", input_img->height);
 
-
     // allocate memory for the result image
     res_img = allocate_image_1D(input_img->width, input_img->height, COMPONENT_GRAYSCALE);
     tmp_img = allocate_image_1D(input_img->width, input_img->height, COMPONENT_GRAYSCALE);
@@ -154,8 +153,8 @@ void sobel_filter_1D(const struct img_1D_t *img, struct img_1D_t *res_img, const
     {
         int x = i % width;
         int y = i / width;
-        int sum_v = 0;
-        int sum_h = 0;
+        uint32_t sum_v = 0;
+        uint32_t sum_h = 0;
         for (int j = 0; j < SOBEL_KERNEL_SIZE; j++)
         {
             for (int k = 0; k < SOBEL_KERNEL_SIZE; k++)
@@ -199,7 +198,6 @@ struct img_chained_t *edge_detection_chained(const struct img_chained_t *input_i
     rgb_to_grayscale_chained(input_img, res_img);
     gaussian_filter_chained(res_img, tmp_img, gauss_kernel);
     sobel_filter_chained(tmp_img, res_img, sobel_v_kernel, sobel_h_kernel);
-
     return res_img;
 }
 
@@ -212,19 +210,19 @@ void rgb_to_grayscale_chained(const struct img_chained_t *img, struct img_chaine
         fprintf(stderr, "Error: image is not in RGB format\n");
         return;
     }
-    else{
+    else
+    {
         printf("start conversion\n");
     }
 
     int width = img->width;
     int height = img->height;
-    int size = width * height ;
+    int size = width * height;
     // chainedlist that start at bottom right corner
     struct pixel_t *current_pixel = img->first_pixel;
     struct pixel_t *result_pixel = result->first_pixel;
 
-
-    for (int i = 0; i < size ; i ++)
+    for (int i = 0; i < size; i++)
     {
         uint8_t r = current_pixel->pixel_val[R_OFFSET];
         uint8_t g = current_pixel->pixel_val[G_OFFSET];
@@ -321,51 +319,41 @@ void sobel_filter_chained(const struct img_chained_t *img, struct img_chained_t 
 
     struct pixel_t *current_pixel = img->first_pixel;
     struct pixel_t *res_pixel = res_img->first_pixel;
-    struct pixel_t *tmp_pixel = img->first_pixel;
+    struct pixel_t *bottom_pixel = current_pixel;
 
-    for (int i = width * height; i > 0; i--)
+    for (int i = width * height - 1; i > 0; i--)
     {
         int x = i % width;
         int y = i / width;
-        int sum_v = 0;
-        int sum_h = 0;
+        uint32_t sum_v = 0;
+        uint32_t sum_h = 0;
 
-        for (int j = SOBEL_KERNEL_SIZE; j > 0; j--)
+        // if its a border pixel, we take the current pixel as result
+        if (x == 0 || x == width - 1 || y == 0 || y == height - 1)
         {
-            for (int k = SOBEL_KERNEL_SIZE; k > 0; k--)
+            res_pixel->pixel_val[0] = current_pixel->pixel_val[0] ;
+            res_pixel = res_pixel->next_pixel;
+            current_pixel = current_pixel->next_pixel;
+            continue;
+        }
+        struct pixel_t *tmp_pixel = bottom_pixel;
+        for (int j = 0; j < SOBEL_KERNEL_SIZE * SOBEL_KERNEL_SIZE; j++)
+        {
+            sum_h += tmp_pixel->pixel_val[0] * h_kernel[ (SOBEL_KERNEL_SIZE * SOBEL_KERNEL_SIZE)-j-1];
+            sum_v += tmp_pixel->pixel_val[0] * v_kernel[ (SOBEL_KERNEL_SIZE * SOBEL_KERNEL_SIZE)-j-1];
+            tmp_pixel = tmp_pixel->next_pixel;
+            if (j == 2 || j == 5)
             {
-                int x_k = x + k - 1;
-                int y_j = y + j - 1;
-                if (x_k >= 0 && x_k < width && y_j >= 0 && y_j < height)
+                for (int k = 0; k < width-SOBEL_KERNEL_SIZE-1; k++)
                 {
-                    // if the pixel is out of the image, we take the pixel current pixel
-                    if (x_k < 0 || x_k >= width)
-                        x_k = x;
-                    if (y_j < 0 || y_j >= height)
-                        y_j = y;
-
-                    // if the pixel was out of boutdaries, we take the current pixel
-                    if (x_k == x || y_j == y)
-                    {
-                        tmp_pixel = current_pixel;
-                    }
-                    else
-                    {
-                        // we go to the pixel at the position (x_k, y_j)
-                        for (int l = i + width + SOBEL_KERNEL_SIZE ; l > (y_j * width + x_k); l--)
-                        {
-                            tmp_pixel = tmp_pixel->next_pixel;
-                        }
-                    }
-
-                    sum_v += tmp_pixel->pixel_val[0] * v_kernel[j * SOBEL_KERNEL_SIZE + k];
-                    sum_h += tmp_pixel->pixel_val[0] * h_kernel[j * SOBEL_KERNEL_SIZE + k];
+                    tmp_pixel = tmp_pixel->next_pixel;
                 }
             }
+
         }
 
-        res_pixel->pixel_val[0] = sqrt(sum_v * sum_v + sum_h * sum_h);
 
+        res_pixel->pixel_val[0] = sqrt(sum_v * sum_v + sum_h * sum_h);
         if (res_pixel->pixel_val[0] > SOBEL_BINARY_THRESHOLD)
             res_pixel->pixel_val[0] = 255;
         else
@@ -373,7 +361,13 @@ void sobel_filter_chained(const struct img_chained_t *img, struct img_chained_t 
 
         res_pixel = res_pixel->next_pixel;
         current_pixel = current_pixel->next_pixel;
-        tmp_pixel = current_pixel;
+        bottom_pixel = bottom_pixel->next_pixel;
+
+        if (x == 1 && y != 0)
+        {
+            bottom_pixel = bottom_pixel->next_pixel;
+            bottom_pixel = bottom_pixel->next_pixel;
+        }
     }
 
     res_img->width = width;
