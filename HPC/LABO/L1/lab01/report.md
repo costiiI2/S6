@@ -77,51 +77,6 @@ Mais neanmoins le parcours doit quand meme se faire et plus l'image est grande p
 
 
 ```bash
-$ time  ./lab01 ../images/medalion.png med_chain.png 2
-start conversion
-
-real    0m19.137s
-user    0m19.067s
-sys     0m0.069s
-
-$ time  ./lab01 ../images/half-life.png hal_chain.png 2
-start conversion
-
-real    1m49.654s
-user    1m49.343s
-sys     0m0.300s
-$ time  ./lab01 ../images/nyc.png ny_chain.png 2
-start conversion
-
-real    0m11.807s
-user    0m11.740s
-sys     0m0.066s
-$ time  ./lab01 ../images/50x50.png 50_chain.png 2
-start conversion
-
-real    0m0.573s
-user    0m0.546s
-sys     0m0.028s
-$ time  ./lab01 ../images/50x50.png 50.png 1
-width: 348
-height: 348
-
-real    0m0.040s
-user    0m0.037s
-sys     0m0.004s
-$ time  ./lab01 ../images/half-life.png hal.png 1
-width: 2000
-height: 2090
-
-real    0m0.274s
-user    0m0.246s
-sys     0m0.028s
-$ time  ./lab01 ../images/nyc.png ny.png 2
-start conversion
-
-real    0m11.721s
-user    0m11.665s
-sys     0m0.056s
 $ time  ./lab01 ../images/medalion.png med_.png 1
 width: 1267
 height: 919
@@ -129,5 +84,57 @@ height: 919
 real    0m0.131s
 user    0m0.089s
 sys     0m0.042s
+
+$ time  ./lab01 ../images/medalion.png med_chain.png 2
+start conversion
+
+real    0m19.137s
+user    0m19.067s
+sys     0m0.069s
+
+$ time  ./lab01 ../images/half-life.png h.png 1
+width: 2000
+height: 2090
+
+real    0m0.288s
+user    0m0.258s
+sys     0m0.030s
+
+$ time  ./lab01 ../images/half-life.png hal_chain.png 2
+start conversion
+
+real    1m49.654s
+user    1m49.343s
+sys     0m0.300s
+
+$ time  ./lab01 ../images/nyc.png ny.png 1
+width: 1150
+height: 710
+
+real    0m0.106s
+user    0m0.102s
+sys     0m0.004s
+
+$ time  ./lab01 ../images/nyc.png ny_chain.png 2
+start conversion
+
+real    0m11.807s
+user    0m11.740s
+sys     0m0.066s
+
+$ time  ./lab01 ../images/50x50.png 50.png 1
+width: 348
+height: 348
+
+real    0m0.040s
+user    0m0.037s
+sys     0m0.004s
+
+$ time  ./lab01 ../images/50x50.png 50_chain.png 2
+start conversion
+
+real    0m0.573s
+user    0m0.546s
+sys     0m0.028s
 
 ```
