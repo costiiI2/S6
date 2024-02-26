@@ -251,53 +251,52 @@ void gaussian_filter_chained(const struct img_chained_t *img, struct img_chained
         return;
     }
 
+ 
     struct pixel_t *current_pixel = img->first_pixel;
     struct pixel_t *res_pixel = res_img->first_pixel;
-    struct pixel_t *tmp_pixel = img->first_pixel;
+    struct pixel_t *bottom_pixel = current_pixel;
 
-    for (int i = width * height - 1; i > 0; i--)
+    for (int i = (width * height )- 1; i > 0; i--)
     {
         int x = i % width;
         int y = i / width;
-        int sum = 0;
+        uint32_t sum = 0;
 
-        for (int j = GAUSSIAN_KERNEL_SIZE; j > 0; j--)
+        // if its a border pixel, we take the current pixel as result
+        if (x == 0 || x == width - 1 || y == 0 || y == height - 1)
         {
-            for (int k = GAUSSIAN_KERNEL_SIZE; k > 0; k--)
+            res_pixel->pixel_val[0] = current_pixel->pixel_val[0] ;
+            res_pixel = res_pixel->next_pixel;
+            current_pixel = current_pixel->next_pixel;
+            continue;
+        }
+        
+        struct pixel_t *tmp_pixel = bottom_pixel;
+        for (int j = 0; j < SOBEL_KERNEL_SIZE * SOBEL_KERNEL_SIZE; j++)
+        {
+            sum += tmp_pixel->pixel_val[0] * kernel[ j];
+            tmp_pixel = tmp_pixel->next_pixel;
+            if (j == 2 || j == 5)
             {
-                int x_k = x + k - 1;
-                int y_j = y + j - 1;
-                if (x_k >= 0 && x_k < width && y_j >= 0 && y_j < height)
+                for (int k = 0; k < width-SOBEL_KERNEL_SIZE-1; k++)
                 {
-                    // if the pixel is out of the image, we take the pixel current pixel
-                    if (x_k < 0 || x_k >= width)
-                        x_k = x;
-                    if (y_j < 0 || y_j >= height)
-                        y_j = y;
-
-                    // if the pixel was out of boutdaries, we take the current pixel
-                    if (x_k == x || y_j == y)
-                    {
-                        tmp_pixel = current_pixel;
-                    }
-                    else
-                    {
-                        // we go to the pixel at the position (x_k, y_j)
-                        for (int l = i; l > (y_j * width + x_k); l--)
-                        {
-                            tmp_pixel = tmp_pixel->next_pixel;
-                        }
-                    }
-
-                    sum += tmp_pixel->pixel_val[0] * kernel[j * GAUSSIAN_KERNEL_SIZE + k];
+                    tmp_pixel = tmp_pixel->next_pixel;
                 }
             }
+
         }
 
         res_pixel->pixel_val[0] = sum / gauss_ponderation;
         res_pixel = res_pixel->next_pixel;
         current_pixel = current_pixel->next_pixel;
-        tmp_pixel = current_pixel;
+        bottom_pixel = bottom_pixel->next_pixel;
+
+        if (x == 1 && y != 0)
+        {
+
+            bottom_pixel = bottom_pixel->next_pixel;
+            bottom_pixel = bottom_pixel->next_pixel;
+        }
     }
 
     res_img->width = width;
@@ -321,7 +320,7 @@ void sobel_filter_chained(const struct img_chained_t *img, struct img_chained_t 
     struct pixel_t *res_pixel = res_img->first_pixel;
     struct pixel_t *bottom_pixel = current_pixel;
 
-    for (int i = width * height - 1; i > 0; i--)
+    for (int i = (width * height )- 1; i > 0; i--)
     {
         int x = i % width;
         int y = i / width;
@@ -336,11 +335,12 @@ void sobel_filter_chained(const struct img_chained_t *img, struct img_chained_t 
             current_pixel = current_pixel->next_pixel;
             continue;
         }
+        
         struct pixel_t *tmp_pixel = bottom_pixel;
         for (int j = 0; j < SOBEL_KERNEL_SIZE * SOBEL_KERNEL_SIZE; j++)
         {
-            sum_h += tmp_pixel->pixel_val[0] * h_kernel[ (SOBEL_KERNEL_SIZE * SOBEL_KERNEL_SIZE)-j-1];
-            sum_v += tmp_pixel->pixel_val[0] * v_kernel[ (SOBEL_KERNEL_SIZE * SOBEL_KERNEL_SIZE)-j-1];
+            sum_h += tmp_pixel->pixel_val[0] * h_kernel[ j];
+            sum_v += tmp_pixel->pixel_val[0] * v_kernel[ j];
             tmp_pixel = tmp_pixel->next_pixel;
             if (j == 2 || j == 5)
             {
@@ -365,6 +365,7 @@ void sobel_filter_chained(const struct img_chained_t *img, struct img_chained_t 
 
         if (x == 1 && y != 0)
         {
+
             bottom_pixel = bottom_pixel->next_pixel;
             bottom_pixel = bottom_pixel->next_pixel;
         }
