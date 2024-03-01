@@ -24,7 +24,7 @@
  * 0.0    23.01.2024  CCT & KBP    Initial version.
  *
 *****************************************************************************************/
-#include "de1soc_io.h"
+#include "de1soc.h"
 #include <stdio.h>
 #include <stdint.h>
 

@@ -23,8 +23,8 @@
  * 0.0    23.01.2024  CCT & KBP    Initial version.
  *
 *****************************************************************************************/
-#ifndef __DE1SOC_IO_H__
-#define __DE1SOC_IO_H__
+#ifndef __DE1SOC_H__
+#define __DE1SOC_H__
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -42,13 +42,13 @@
 #endif
 
 /* *** OFFSETS ************************************************************* */
-#define INTERFACE_OFST		0x10000
+#define INTERFACE_OFST		0x00000
 
 // Based offset defined by lad sheet
-#define OFST_CONSTANT_ID	0x0
-#define OFST_KEYS			0x10
-#define OFST_SWITCHES		0x20
-#define OFST_LEDS			0x00
+#define OFST_CONSTANT_ID		0x60
+#define OFST_KEYS			0x00
+#define OFST_SWITCHES			0x20
+#define OFST_LEDS			0x10
 #define OFST_HEX3_0			0x30
 #define OFST_HEX5_4			0x40
 
@@ -106,4 +106,4 @@ void write_7segs_hex5_4(uint32_t mask7seg);
  *       the ouf-of-bound side exceeded, it is omitted in this function */
 void write_nbr_on_7segs(uint32_t n);
 
-#endif /* __DE1SOC_IO_H__ */
+#endif /* __DE1SOC_H__ */

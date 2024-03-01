@@ -239,13 +239,12 @@ architecture top of DE1_SoC_top is
             hps_io_0_hps_io_gpio_inst_GPIO53  : inout std_logic                     := 'X' ;             -- hps_io_gpio_inst_GPIO53
 				
 				-- DE1_I/O
-				leds_external_connection_export     : out   std_logic_vector(9 downto 0)   ;              -- export
-				keys_external_connection_export     : in    std_logic_vector(3 downto 0)  := (others => 'X'); -- export
-				switches_external_connection_export : in   std_logic_vector(9 downto 0)     ;                -- export
-
-				hex_0_3_external_connection_export  : out   std_logic_vector(27 downto 0)   ;                 -- export
-				hex_4_5_external_connection_export  : out   std_logic_vector(13 downto 0)    ;                 -- export
-				
+                keys_export                      : in    std_logic_vector(3 downto 0)  := (others => 'X'); -- export
+                leds_export                      : out   std_logic_vector(9 downto 0);                     -- export
+                switches_export                  : in    std_logic_vector(9 downto 0)  := (others => 'X'); -- export
+                hex0_3_export                    : out   std_logic_vector(27 downto 0);                    -- export
+                hex4_5_export                    : out   std_logic_vector(13 downto 0);                     -- export
+                
 				-- Clock
 				clk_clk                             : in    std_logic                     := 'X'      -- clk
 			
@@ -297,15 +296,15 @@ begin
 		hps_io_0_hps_io_gpio_inst_GPIO53  => HPS_LED_io,
 		
 		-- DE1_I/O
-		leds_external_connection_export     => LEDR_o,
-		keys_external_connection_export    	=> KEY_i,
-		switches_external_connection_export => SW_i,
-		hex_0_3_external_connection_export(6 downto 0)  => HEX0_o,
-        hex_0_3_external_connection_export(13 downto 7) => HEX1_o,
-        hex_0_3_external_connection_export(20 downto 14) => HEX2_o,
-        hex_0_3_external_connection_export(27 downto 21) => HEX3_o,
-        hex_4_5_external_connection_export(6 downto 0)  => HEX4_o,
-        hex_4_5_external_connection_export(13 downto 7) => HEX5_o,
+		leds_export     => LEDR_o,
+		keys_export    	=> KEY_i,
+		switches_export => SW_i,
+        hex0_3_export(6 downto 0)  => HEX0_o,
+        hex0_3_export(13 downto 7) => HEX1_o,
+        hex0_3_export(20 downto 14) => HEX2_o,
+        hex0_3_export(27 downto 21) => HEX3_o,
+        hex4_5_export(6 downto 0)  => HEX4_o,
+        hex4_5_export(13 downto 7) => HEX5_o,
 		
 		-- Clock
 		clk_clk                           	=> CLOCK_50_i
