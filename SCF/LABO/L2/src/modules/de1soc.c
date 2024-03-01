@@ -37,11 +37,11 @@ uint32_t get_constant(void) {
 
 // ======================================== DE1 I/O ACCESS ========================================
 uint32_t get_keys(void) {
-    return (~ITF_REG(OFST_KEYS)) & KEYS_MASK;
+    return ITF_REG(OFST_KEYS)& KEYS_MASK;
 }
 
 uint32_t get_switches(void) {
-    return ITF_REG(OFST_SWITCHES) & SWITCHES_MASK;
+    return ITF_REG(OFST_SWITCHES) ;
 }
 
 
@@ -51,7 +51,7 @@ uint32_t get_leds(void) {
 
 
 void write_leds(uint32_t maskled) {
-	ITF_REG(OFST_LEDS) = maskled & LEDS_MASK;
+	ITF_REG(OFST_LEDS) = maskled ;
 }
 
 void toggle_leds(uint32_t maskled) {

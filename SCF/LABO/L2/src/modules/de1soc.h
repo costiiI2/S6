@@ -46,9 +46,9 @@
 
 // Based offset defined by lad sheet
 #define OFST_CONSTANT_ID		0x60
-#define OFST_KEYS			0x00
+#define OFST_KEYS			0x10
 #define OFST_SWITCHES			0x20
-#define OFST_LEDS			0x10
+#define OFST_LEDS			0x00
 #define OFST_HEX3_0			0x30
 #define OFST_HEX5_4			0x40
 
@@ -59,7 +59,7 @@
 /* *** BITS DEFINITIONS **************************************************** */
 #define KEYS_MASK		0xF
 #define SWITCHES_MASK	0x3FF
-#define LEDS_MASK		0xFF
+#define LEDS_MASK		0x3FF
 
 #define HEX_MASK		0x7F
 #define HEX_BIT_SIZE	7
