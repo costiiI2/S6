@@ -28,23 +28,6 @@
 #include "modules/de1soc.h"
 int __auto_semihosting;
 
-
-/* we define macros for setting and clearing bits in a register without changing the other bits */
-#define SET_BIT(reg, bit) ((reg) |= (1U << (bit)))
-#define CLEAR_BIT(reg, bit) ((reg) &= ~(1U << (bit)))
-
-/* we define the base address of GPIO 1 where our led and button are assigned */
-#define BASE_ADDR 0xFF709000
-#define EXTERNAL_PORT_OFFSET 0x50
-
-/* we define the base address of the led and button */
-#define LED_OFFSET 24
-#define BUTTON_OFFSET 25
-
-/* we define the offset of the data registry and base registry for GPIO 1 */
-#define DIR_ADDR_OFFSET 0x4 // 0 = input 1 = output
-#define DATA_ADDR_OFFSET 0x0 // 0 = low 1 = high
-
 int main(void){
     
 	uint16_t switches;
@@ -55,7 +38,7 @@ int main(void){
     {
      
     
-      	switches = get_switches();
+        switches = get_switches();
 
        write_leds(switches);
 

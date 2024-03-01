@@ -299,7 +299,7 @@ begin
 		leds_export     => LEDR_o,
 		keys_export    	=> KEY_i,
 		switches_export => SW_i,
-        hex0_3_export(6 downto 0)  => HEX0_o,
+		hex0_3_export(6 downto 0)  => HEX0_o,
         hex0_3_export(13 downto 7) => HEX1_o,
         hex0_3_export(20 downto 14) => HEX2_o,
         hex0_3_export(27 downto 21) => HEX3_o,
