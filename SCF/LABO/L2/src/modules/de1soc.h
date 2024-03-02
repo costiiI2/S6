@@ -21,6 +21,7 @@
  * Modifications :
  * Ver    Date        Student      Comments
  * 0.0    23.01.2024  CCT & KBP    Initial version.
+ * 0.1    01.03.2024  CCO	   modified for SCF L-2
  *
 *****************************************************************************************/
 #ifndef __DE1SOC_H__
@@ -45,10 +46,9 @@
 #define INTERFACE_OFST		0x00000
 
 // Based offset defined by lad sheet
-#define OFST_CONSTANT_ID		0x60
+#define OFST_LEDS			0x00
 #define OFST_KEYS			0x10
 #define OFST_SWITCHES			0x20
-#define OFST_LEDS			0x00
 #define OFST_HEX3_0			0x30
 #define OFST_HEX5_4			0x40
 

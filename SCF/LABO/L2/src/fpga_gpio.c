@@ -7,19 +7,19 @@
  * Reconfigurable Embedded Digital Systems
  *****************************************************************************************
  *
- * File                 : hps_gpio.c
+ * File                 : fpga_gpio.c
  * Author               :
  * Date                 :
  *
  * Context              : SOCF tutorial lab
  *
  *****************************************************************************************
- * Brief: light HPS user LED up when HPS user button pressed, for DE1-SoC board
+ * Brief: laboratoire 2
  *
  *****************************************************************************************
  * Modifications :
  * Ver    Date        Student      Comments
- * 1.0	  21.02.24    CCO	   allumage de la led sur appui d'un boutton
+ * 1.0	  01.03.24    CCO	       First version
  *
  *****************************************************************************************/
 #include <stdint.h>

@@ -22,6 +22,7 @@
  * Modifications :
  * Ver    Date        Student      Comments
  * 0.0    23.01.2024  CCT & KBP    Initial version.
+ * 0.1    01.03.2024  CCO	   modified for SCF L-2
  *
 *****************************************************************************************/
 #include "de1soc.h"
@@ -29,11 +30,6 @@
 #include <stdint.h>
 
 static uint32_t addr_offset_7seg[] = { OFST_HEX3_0, OFST_HEX5_4 };
-
-// ===================================== INTERFACE I/O ACCESS =====================================
-uint32_t get_constant(void) {
-    return ITF_REG(OFST_CONSTANT_ID);
-}
 
 // ======================================== DE1 I/O ACCESS ========================================
 uint32_t get_keys(void) {
