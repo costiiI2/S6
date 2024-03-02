@@ -29,8 +29,6 @@ Unité d'enseignement: **SCF**
 
 \hfill\break
 
-\hfill\break
-
 \raggedright
 
 Auteur(s):
