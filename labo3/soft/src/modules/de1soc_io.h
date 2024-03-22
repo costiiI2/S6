@@ -21,11 +21,11 @@
  * Modifications :
  * Ver    Date        Student      Comments
  * 0.0    23.01.2024  CCT & KBP    Initial version.
- * 0.1    01.03.2024  CCO	   modified for SCF L-2
+ * 1.0    20.03.2024  KBP          SOCF-Lab2: IRQ from FPGA
  *
-*****************************************************************************************/
-#ifndef __DE1SOC_H__
-#define __DE1SOC_H__
+ ****************************************************************************************/
+#ifndef __DE1SOC_IO_H__
+#define __DE1SOC_IO_H__
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -40,39 +40,49 @@
 #define BIT5	(1 << 5)
 #define BIT6	(1 << 6)
 #define BIT7	(1 << 7)
+#define BIT8	(1 << 8)
+#define BIT9	(1 << 9)
 #endif
 
 /* *** OFFSETS ************************************************************* */
-#define INTERFACE_OFST		0x00000
+#define INTERFACE_OFST		0x0
 
 // Based offset defined by lad sheet
-#define OFST_LEDS			0x00
-#define OFST_KEYS			0x10
-#define OFST_SWITCHES			0x20
-#define OFST_HEX3_0			0x30
-#define OFST_HEX5_4			0x40
+//#define OFST_CONSTANT_ID	0x0
+#define OFST_LEDS		0x00
+#define OFST_HEX3_0		0x10
+#define OFST_HEX5_4		0x20
+#define OFST_KEYS		0x30
+#define OFST_SWITCHES		0x40
+
+#define OFST_INTMASK		0x08
+#define OFST_EDGECAPTURE	0x0C
 
 /* *** ACCESS MACRO ******************************************************** */
-#define ITF_REG(_x_)	*(volatile uint32_t *)							\
-						((AXI_LW_HPS_FPGA_BASE_ADD + INTERFACE_OFST) + _x_)
+#define ITF_REG(_x_)	*(volatile uint32_t *)	\
+			((AXI_LW_HPS_FPGA_BASE_ADD + INTERFACE_OFST + _x_))
 
 /* *** BITS DEFINITIONS **************************************************** */
-#define KEYS_MASK		0xF
+#define KEYS_MASK	0xF
 #define SWITCHES_MASK	0x3FF
-#define LEDS_MASK		0x3FF
+#define LEDS_MASK	0x3FF
 
-#define HEX_MASK		0x7F
-#define HEX_BIT_SIZE	7
-#define HEX0_NBR		0
-#define HEX1_NBR		1
-#define HEX2_NBR		2
-#define HEX3_NBR		3
-#define HEX4_NBR		4
-#define HEX5_NBR		5
+#define HEX_MASK	0x7F
+#define HEX_BIT_SIZE	8
+#define HEX0_NBR	0
+#define HEX1_NBR	1
+#define HEX2_NBR	2
+#define HEX3_NBR	3
+#define HEX4_NBR	4
+#define HEX5_NBR	5
 
 /* ************************************************************************* */
 /** get_constant(): Read interface constant defined by students */
-uint32_t get_constant(void);
+//uint32_t get_constant(void);
+
+/** enable_keys_ints(): Enable keys interrupt 
+ * Note: Each bit represents a KEY (3 downto 0) */
+void enable_keys_int(uint8_t mask);
 
 /** get_keys(): Read DE1SoC's keys
  * Note: Result is already inverted in functions, because they're active LOW */
@@ -100,10 +110,12 @@ void write_7segs_hex3_0(uint32_t mask7seg);
 uint32_t get_7segs_hex5_4(void);
 void write_7segs_hex5_4(uint32_t mask7seg);
 
+void write_digit_on_7seg(uint8_t nbr7seg, uint8_t n, uint8_t base);
+
 /** write_nbr_on_7segs()
  * "Write" nbr on 7Segs HEX4 to HEX0
  * NOTE: As for this application, HEX5 is used to display
  *       the ouf-of-bound side exceeded, it is omitted in this function */
 void write_nbr_on_7segs(uint32_t n);
 
-#endif /* __DE1SOC_H__ */
+#endif /* __DE1SOC_IO_H__ */

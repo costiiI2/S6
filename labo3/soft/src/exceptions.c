@@ -22,49 +22,39 @@
  * Modifications :
  * Ver    Date        Engineer      Comments
  * 0.0    16.02.2018  SMS           Initial version.
+ * 1.0    20.03.2024  KBP           SOCF-Lab2: IRQ from FPGA
  *
-*****************************************************************************************/
+ *****************************************************************************************/
+#include <stdio.h>
 #include <stdint.h>
 
 #include "address_map_arm.h"
 #include "defines.h"
 
-#define IRQ_KEY 72
+#define FPGA_IRQ0_NBR	72
 
-#define ENABLE 0x1
-#define DISABLE 0x0
-
-/* Configurations defines for GIC */
-#define INTERFACE_BASE_ADD 0xFFFEC100
-#define INTERFACE_LOCAL_PRIO 0xFFFF
-#define OFFSET_INTERFACE_LOCAL_PRIO 0x4
-#define ICCEOIR 0x10
-#define ICCIAR 0x0C
-#define CPU_LOCAL_OFFSET(off) *(volatile uint32_t *)(INTERFACE_BASE_ADD + off)
-
-#define DISTRIB_BASE_ADD 0xFFFED000
-#define DISTRIB_OFFSET(off) *(volatile uint32_t *)(DISTRIB_BASE_ADD + off)
-
-
-void config_interrupt(int n, int CPU_target);
-
-void hps_key_ISR(void);
+void hps_keys_ISR(void);
 
 // Define the IRQ exception handler
 void __attribute__ ((interrupt)) __cs3_isr_irq(void)
 {
-	
-	/* Read CPU Interface  (ICCIAR) registers to determine which peripheral has caused an interrupt */
-	int id = CPU_LOCAL_OFFSET(ICCIAR);
+	/***********
+	 * TO DO
+	 **********/
 
-	/* Handle the interrupt if it comes from the timer */
-	if (id == IRQ_KEY)
-		hps_key_ISR();
-	else {
-		/*other irq*/
+	// Read CPU Interface registers to determine which peripheral has caused an interrupt
+	int intId = GIC_CPU_ITF_REG(OFSET_ICCIAR);
+
+	// Handle the interrupt if it comes from the KEYs
+	if (intId == FPGA_IRQ0_NBR) {
+		hps_keys_ISR();
+	} else {
+		printf("Interrupt ID(%d) other than FPGA_IRQ0(%d)...\n",
+		       intId, FPGA_IRQ0_NBR);
 	}
-	/* Clear interrupt from the CPU Interface (ICCEOIR) */
-	CPU_LOCAL_OFFSET(ICCEOIR) = id;
+
+	// Clear interrupt from the CPU Interface
+	GIC_CPU_ITF_REG(OFSET_ICCEOIR) = intId;
 
 	return;
 } 
@@ -72,41 +62,43 @@ void __attribute__ ((interrupt)) __cs3_isr_irq(void)
 // Define the remaining exception handlers
 void __attribute__ ((interrupt)) __cs3_reset (void)
 {
-    while(1);
+	while(1);
 }
 
 void __attribute__ ((interrupt)) __cs3_isr_undef (void)
 {
-    while(1);
+	while(1);
 }
 
 void __attribute__ ((interrupt)) __cs3_isr_swi (void)
 {
-    while(1);
+	while(1);
 }
 
 void __attribute__ ((interrupt)) __cs3_isr_pabort (void)
 {
-    while(1);
+	while(1);
 }
 
 void __attribute__ ((interrupt)) __cs3_isr_dabort (void)
 {
-    while(1);
+	while(1);
 }
 
 void __attribute__ ((interrupt)) __cs3_isr_fiq (void)
 {
-    while(1);
+	while(1);
 }
 
 /* 
  * Initialize the banked stack pointer register for IRQ mode
-*/
+ */
 void set_A9_IRQ_stack(void)
 {
 	uint32_t stack, mode;
-	stack = A9_ONCHIP_END - 7;		// top of A9 onchip memory, aligned to 8 bytes
+	// top of A9 onchip memory, aligned to 8 bytes
+	stack = A9_ONCHIP_END - 7;
+
 	/* change processor to IRQ mode with interrupts disabled */
 	mode = INT_DISABLE | IRQ_MODE;
 	asm("msr cpsr, %[ps]" : : [ps] "r" (mode));
@@ -118,61 +110,71 @@ void set_A9_IRQ_stack(void)
 	asm("msr cpsr, %[ps]" : : [ps] "r" (mode));
 }
 
+/*
+ * Turn off interrupts in the ARM processor
+ */
+void disable_A9_interrupts(void)
+{
+	int status = SVC_MODE | INT_DISABLE;
+	asm("msr cpsr, %[ps]" : : [ps] "r"(status));
+}
+
 /* 
  * Turn on interrupts in the ARM processor
-*/
+ */
 void enable_A9_interrupts(void)
 {
 	uint32_t status = SVC_MODE | INT_ENABLE;
 	asm("msr cpsr, %[ps]" : : [ps]"r"(status));
 }
 
+void config_interrupt(int N, int CPU_target) {
+	int reg_offset, bitN, address;
 
-/*
- * Turn off interrupts in the ARM processor
- */
-void disable_A9_interrupts(void)
-{
-	uint32_t status = SVC_MODE | INT_DISABLE;
-	asm("msr cpsr, %[ps]" : : [ps] "r"(status));
+	/* Configure the Interrupt Set-Enable Registers (ICDISERn).
+	 * reg_offset = integer_div(N / 32) * 4 = int(N / 8) = int(N >> 3)
+	 * value = 1 << (N mod 32) */
+	reg_offset = (N >> 3) & 0xFFFFFFFC;
+	bitN    = N & 0x1F;
+	address = (GIC_DISTRIBUTOR_BASE_ADD + OFSET_ICDISER0) + reg_offset;
+
+	/* Now that we know the register address and value,
+	 * set the appropriate bit */
+	*(volatile int *)address |= (0x1 << bitN);
+
+	/* Configure the Interrupt Processor Targets Register (ICDIPTRn)
+	 * reg_offset = integer_div(N / 4) * 4 = int(N / 1) = int(N)
+	 * index = N mod 4 */
+	reg_offset = (N & 0xFFFFFFFC);
+	bitN    = N & 0x3;
+	address = (GIC_DISTRIBUTOR_BASE_ADD + OFSET_ICDIPTR0) +
+		  reg_offset + bitN;
+
+	/* Now that we know the register address and value,
+	 * write to (only) the appropriate byte */
+	*(volatile char *)address = (char) CPU_target;
 }
 
-
-/*
+/* 
  * Configure the Generic Interrupt Controller (GIC)
  */
 void config_GIC(void)
 {
-	config_interrupt(IRQ_KEY, 0x1);
+	/***********
+	 * TO DO
+	 **********/
+	// Configure interrupt of FPGA_IRQ0 on CPU0
+	config_interrupt(FPGA_IRQ0_NBR, CPU0);
 
-	/* CPU interface enable and priority bits */
-	CPU_LOCAL_OFFSET(OFFSET_INTERFACE_LOCAL_PRIO) |= INTERFACE_LOCAL_PRIO;
-	CPU_LOCAL_OFFSET(0x0) = ENABLE;
+	/* Set Interrupt Priority Mask Register (ICCPMR)
+	 * to enable ints of all prio. */
+	GIC_CPU_ITF_REG(OFSET_ICCPMR) = 0xFFFF;
 
-	/* DISTRIBUTOR enable */
-	DISTRIB_OFFSET(0x0) = ENABLE;
+	/* Set CPU Interface Control Register (ICCICR)
+	 * to enable signaling of ints */
+	GIC_CPU_ITF_REG(OFSET_ICCICR) = 1;
+
+	// Enable Distributor (ICDDCR) to send pending interrupts to CPUs
+	GIC_DISTRIB_REG(OFSET_ICDDCR) = 1;
 }
 
-void config_interrupt(int n, int CPU_target)
-{
-	int reg_offset, index, value, address;
-	/* Configure the Interrupt Set-Enable Registers (ICDISERn).
-	 * reg_offset = (integer_div(N / 32) * 4
-	 * value = 1 << (N mod 32) */
-	reg_offset = (n >> 3) & 0xFFFFFFFC;
-	index = n & 0x1F;
-	value = 0x1 << index;
-	address = 0xFFFED100 + reg_offset;
-	/* Now that we know the register address and value, set the appropriate bit */
-	*(int *)address |= value;
-
-	/* Configure the Interrupt Processor Targets Register (ICDIPTRn)
-	 * reg_offset = integer_div(N / 4) * 4
-	 * index = N mod 4 */
-	reg_offset = (n & 0xFFFFFFFC);
-	index = n & 0x3;
-	address = 0xFFFED800 + reg_offset + index;
-	/* Now that we know the register address and value, write to (only) the
-	 * appropriate byte */
-	*(char *)address = (char)CPU_target;
-}
