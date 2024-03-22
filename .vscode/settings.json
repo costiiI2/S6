@@ -1,6 +1,7 @@
 {
         "cSpell.language": "en,en-GB,en-US,fr-FR,fr",
         "files.associations": {
-                "stb_image.h": "c"
+                "stb_image.h": "c",
+                "de1soc.h": "c"
         }
 }

@@ -28,8 +28,12 @@
 #include "modules/alfanum.h"
 #include "modules/de1soc.h"
 int __auto_semihosting;
+extern void disable_A9_interrupts(void);
+extern void set_A9_IRQ_stack(void);
+extern void config_GIC(void);
+extern void enable_A9_interrupts(void);
 
-uint8_t key_pressed = -1;
+static uint8_t key_pressed = 0;
 
 /*
     * @brief: This function is called when the key interrupt is triggered
@@ -38,13 +42,13 @@ void hps_key_ISR()
 {
    
     /* read wich key has been pressed */
-    int keys = get_keys();
-    
-    CLEAR_INTERRUPT();
+    key_pressed = ITF_REG(OFST_KEYS + 0xc);
+    write_leds(0xf);
+    ITF_REG(OFST_KEYS + 0xc) = 0;
 }
 
 
-void handle_key0_pressed(int keys, int switches, int* hexa) {
+void handle_key0_pressed(int keys, int switches, const char* hexa) {
         write_leds(switches);
         write_7seg_hex(0, hexa[switches & 0xF]);
         write_7seg_hex(1, hexa[(switches >> 4) & 0xF]);
@@ -64,8 +68,8 @@ void handle_key0_pressed(int keys, int switches, int* hexa) {
     
 }
 
-void handle_key1_pressed(int keys, int switches, int* hexa) {
-        write_leds(!switches);
+void handle_key1_pressed(int keys, int switches, const char* hexa) {
+        write_leds(~switches);
         write_7seg_hex(0, hexa[switches & 0xF]);
         write_7seg_hex(1, hexa[(switches >> 4) & 0xF]);
 
@@ -95,9 +99,10 @@ int main(void)
     /* Init GIC */
     config_GIC();
 
+    ITF_REG(OFST_KEYS + 0x8) |= (BIT3 | BIT2 | BIT1 | BIT0);
     /* Enable interrupts */
     enable_A9_interrupts();
-
+    write_leds(0xff);
     write_7seg_hex(4, 0);   
     write_7seg_hex(5, 0);
 
@@ -113,19 +118,17 @@ int main(void)
         switches = get_switches();
 
         // if key 0 is pressed, light up the first led
-        if(key_pressed == 0) {
+        if(key_pressed & 0x1 ) {
             handle_key0_pressed(keys, switches, hexa);
             leds_status = switches;
-            key_pressed = -1;
+            key_pressed = 0;
         }
         // if key 1 is pressed, light up the second led
-        else if(key_pressed == 1) {
+        else if(key_pressed & 0x2 ) {
             handle_key1_pressed(keys, switches, hexa);
             leds_status = ~switches;
-            key_pressed = -1;
+            key_pressed = 0;
         }
-        
-
-      
+         
     }
 }

@@ -60,10 +60,7 @@ void __attribute__ ((interrupt)) __cs3_isr_irq(void)
 	/* Handle the interrupt if it comes from the timer */
 	if (id == IRQ_KEY)
 		hps_key_ISR();
-	else {
-		printf("Interrupt ID(%d) other than FPGA_IRQ0(%d)...\n",
-		       intId, FPGA_IRQ0_NBR);
-	}
+	
 	/* Clear interrupt from the CPU Interface (ICCEOIR) */
 	CPU_LOCAL_OFFSET(ICCEOIR) = id;
 
