@@ -174,33 +174,6 @@ half life 2000X2090 linkedList
 
 
 med 1D 1267X919
-
-+-----------------------------------+------------+
-|               Metric              | HWThread 0 |
-+-----------------------------------+------------+
-|        Runtime (RDTSC) [s]        |    21.5682 |
-|        Runtime unhalted [s]       |    38.8379 |
-|            Clock [MHz]            |  3706.7681 |
-|                CPI                |     3.1187 |
-|             Energy [J]            |   339.6508 |
-|             Power [W]             |    15.7478 |
-|          Energy DRAM [J]          |    24.7045 |
-|           Power DRAM [W]          |     1.1454 |
-|            DP [MFLOP/s]           |     0.3237 |
-|          AVX DP [MFLOP/s]         |          0 |
-|          Packed [MUOPS/s]         |          0 |
-|          Scalar [MUOPS/s]         |     0.3237 |
-|  Memory load bandwidth [MBytes/s] |  2640.9210 |
-|  Memory load data volume [GBytes] |    56.9599 |
-| Memory evict bandwidth [MBytes/s] |  1237.0837 |
-| Memory evict data volume [GBytes] |    26.6816 |
-|    Memory bandwidth [MBytes/s]    |  3878.0047 |
-|    Memory data volume [GBytes]    |    83.6415 |
-|       Operational intensity       |     0.0001 |
-+-----------------------------------+------------+
-
-med LinkedList 1267X919
-
 +-----------------------------------+------------+
 |               Metric              | HWThread 0 |
 +-----------------------------------+------------+
@@ -225,6 +198,33 @@ med LinkedList 1267X919
 |       Operational intensity       |     0.0982 |
 +-----------------------------------+------------+
 
+
+med LinkedList 1267X919
+
+
++-----------------------------------+------------+
+|               Metric              | HWThread 0 |
++-----------------------------------+------------+
+|        Runtime (RDTSC) [s]        |    21.5682 |
+|        Runtime unhalted [s]       |    38.8379 |
+|            Clock [MHz]            |  3706.7681 |
+|                CPI                |     3.1187 |
+|             Energy [J]            |   339.6508 |
+|             Power [W]             |    15.7478 |
+|          Energy DRAM [J]          |    24.7045 |
+|           Power DRAM [W]          |     1.1454 |
+|            DP [MFLOP/s]           |     0.3237 |
+|          AVX DP [MFLOP/s]         |          0 |
+|          Packed [MUOPS/s]         |          0 |
+|          Scalar [MUOPS/s]         |     0.3237 |
+|  Memory load bandwidth [MBytes/s] |  2640.9210 |
+|  Memory load data volume [GBytes] |    56.9599 |
+| Memory evict bandwidth [MBytes/s] |  1237.0837 |
+| Memory evict data volume [GBytes] |    26.6816 |
+|    Memory bandwidth [MBytes/s]    |  3878.0047 |
+|    Memory data volume [GBytes]    |    83.6415 |
+|       Operational intensity       |     0.0001 |
++-----------------------------------+------------+
 
 nyc 1150X710
 
@@ -305,15 +305,35 @@ For nyc 1150x710 we have a maxperf 168.0232 MFLOP/s and a max bandwidth of 781.7
 
 For nyc 1150x710 linked list we have a maxperf 0.3947 MFLOP/s and a max bandwidth of 279.9790 MBytes/s
 
+## **Analyse des performances**
 
-53.9394 738.4414 sml1D
-3.7040 1495.4562 smlLL
-185.6797 1082.3654 hl1D
-0.2288 573.9938 hlLL
-160.0219 1629.6632 med1D
-0.3237 3878.0047 medLL
-168.0232 781.7181 nyc1D
-0.3947 279.9790 nycLL 
+Les performances des différentes implémentations des algorithmes de traitement d'images sont mesurées en termes de métriques telles que le temps d'exécution, la consommation d'énergie, la puissance, le nombre d'opérations en virgule flottante par seconde (MFLOP/s), la bande passante mémoire, le volume de données mémoire, l'intensité opérationnelle, le nombre de cycles par instruction (CPI), la fréquence du processeur, etc. Les performances des algorithmes sont mesurées pour les images de taille 100x100, 2000x2090, 1267x919 et 1150x710. 
+
+Nous avons deux implémentations pour chaque image, une implémentation utilisant un tableau et une autre utilisant une liste chaînée. Les performances des algorithmes sont mesurées pour les deux implémentations.
+
+Les performances des algorithmes de traitement d'images sont mesurées en utilisant l'outil de profilage likwid. Les métriques mesurées sont les suivantes:
+
+- **Runtime (RDTSC) [s]**: Temps d'exécution en secondes mesuré en utilisant le registre RDTSC.
+- **Runtime unhalted [s]**: Temps d'exécution en secondes mesuré en utilisant le registre unhalted.
+- **Clock [MHz]**: Fréquence du processeur en MHz.
+- **CPI**: Nombre de cycles par instruction.
+- **Energy [J]**: Consommation d'énergie en Joules.
+- **Power [W]**: Puissance en Watts.
+- **Energy DRAM [J]**: Consommation d'énergie de la mémoire DRAM en Joules.
+- **Power DRAM [W]**: Puissance de la mémoire DRAM en Watts.
+- **DP [MFLOP/s]**: Nombre d'opérations en virgule flottante par seconde.
+- **AVX DP [MFLOP/s]**: Nombre d'opérations en virgule flottante par seconde utilisant AVX.
+- **Packed [MUOPS/s]**: Nombre d'opérations vectorielles par seconde.
+- **Scalar [MUOPS/s]**: Nombre d'opérations vectorielles par seconde.
+- **Memory load bandwidth [MBytes/s]**: Bande passante de chargement mémoire en MBytes/s.
+- **Memory load data volume [GBytes]**: Volume de données mémoire chargées en GBytes.
+- **Memory evict bandwidth [MBytes/s]**: Bande passante d'éviction mémoire en MBytes/s.
+- **Memory evict data volume [GBytes]**: Volume de données mémoire évacuées en GBytes.
+- **Memory bandwidth [MBytes/s]**: Bande passante mémoire en MBytes/s.
+- **Memory data volume [GBytes]**: Volume de données mémoire en GBytes.
+- **Operational intensity**: Intensité opérationnelle.
+
+Nous remarquons que lors des differentes mesures, les performances des algorithmes utilisant des listes chaînées sont inférieures à celles utilisant des tableaux. Cela est dû au fait que les listes chaînées nécessitent plus d'accès mémoire et de déplacements de pointeurs, ce qui entraîne une augmentation de la latence et une diminution des performances. Les performances des algorithmes dépendent également de la taille de l'image et de la complexité de l'algorithme. Les performances des algorithmes sont également influencées par la bande passante mémoire et la fréquence du processeur. Les performances des algorithmes peuvent être améliorées en utilisant des techniques d'optimisation telles que la parallélisation, la vectorisation, la réduction de la latence mémoire, etc.
 
 ![graph](graph.png){ width=80% }
 
