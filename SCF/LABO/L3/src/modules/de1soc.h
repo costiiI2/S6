@@ -20,8 +20,9 @@
  *****************************************************************************************
  * Modifications :
  * Ver    Date        Student      Comments
- * 0.0    23.01.2024  CCT & KBP    Initial version.
+ * 0.0    23.01.2024  CCO & KBP    Initial version.
  * 0.1    01.03.2024  CCO	   modified for SCF L-2
+ * 0.2    24.03.2024  CCO          modified for SCF L-3
  *
 *****************************************************************************************/
 #ifndef __DE1SOC_H__
@@ -46,11 +47,13 @@
 #define INTERFACE_OFST		0x00000
 
 // Based offset defined by lad sheet
-#define OFST_LEDS			0x00
-#define OFST_KEYS			0x10
-#define OFST_SWITCHES			0x20
-#define OFST_HEX3_0			0x30
-#define OFST_HEX5_4			0x40
+#define OFST_LEDS		0x00
+#define OFST_KEYS		0x10
+#define OFST_SWITCHES		0x20
+#define OFST_HEX3_0		0x30
+#define OFST_HEX5_4		0x40
+#define EDGE_CAP		0xC
+
 
 /* *** ACCESS MACRO ******************************************************** */
 #define ITF_REG(_x_)	*(volatile uint32_t *)							\
@@ -58,11 +61,13 @@
 
 /* *** BITS DEFINITIONS **************************************************** */
 #define KEYS_MASK		0xF
-#define SWITCHES_MASK	0x3FF
+#define SWITCHES_MASK		0x3FF
 #define LEDS_MASK		0x3FF
+#define IRQ_MASK		0x8
 
 #define HEX_MASK		0x7F
-#define HEX_BIT_SIZE	7
+#define HEX_COUNT		6
+#define HEX_BIT_SIZE		7
 #define HEX0_NBR		0
 #define HEX1_NBR		1
 #define HEX2_NBR		2
@@ -70,6 +75,24 @@
 #define HEX4_NBR		4
 #define HEX5_NBR		5
 
+#define KEY_0			(1 << 0)
+#define KEY_1			(1 << 1)
+#define KEY_2			(1 << 2)
+#define KEY_3			(1 << 3)
+
+#define OFF			0
+#define ON 			1
+
+#define LED_0			(1 << 0)
+#define LED_1			(1 << 1)
+#define LED_2			(1 << 2)
+#define LED_3			(1 << 3)
+#define LED_4			(1 << 4)
+#define LED_5			(1 << 5)
+#define LED_6			(1 << 6)
+#define LED_7			(1 << 7)
+#define LED_8			(1 << 8)
+#define LED_9			(1 << 9)
 /* ************************************************************************* */
 /** get_constant(): Read interface constant defined by students */
 uint32_t get_constant(void);
