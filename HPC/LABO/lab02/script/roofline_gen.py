@@ -16,7 +16,7 @@ with open('input.txt', 'r') as file:
             line_values = line.strip().split()
             points.append((float(line_values[0]), float(line_values[1]), line_values[2]))
 
-x_values = [x/10 for x in range(0, 10<0)]
+x_values = [x/10 for x in range(0, 100)]
 y_values = [f(x, maxperf, maxband) for x in x_values]
 
 if points != []:
