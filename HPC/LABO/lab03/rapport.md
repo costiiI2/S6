@@ -94,10 +94,16 @@ en voici [le code assembleur](https://godbolt.org/z/WqxP99hvY).
 
 nous remarquons tout de suite une amélioration dans le code assembleur généré.
 
-Mais nous pouvons faire mieux grâce à [l'optimisation de compilation](https://godbolt.org/z/cPsc38T6o) `-O3`:
+Mais nous pouvons faire mieux grâce à [l'optimisation de compilation](https://godbolt.org/z/cPsc38T6o) `-O3`.
+
+
 
 
 Nous remarquons que depuis notre code initial, nous avons pu réduire le nombre d'instructions de 9 à 3, ceci va accélérer l'exécution de notre programme.
+
+Grâce a l'utilisation du registre EDI qui contient déjà la valeur de `num`, nous avons pu éviter de faire une opération inutile de déplacement de `num` dans un autre registre.
+
+Ceci est possible grâce aux conventions d'appel de la fonction qui permettent de stocker les paramètres de la fonction dans des registres spécifiques.
 
 ## **Code simple exemple 2**
 
@@ -156,13 +162,13 @@ int abs(int num) {
 }
 ```
 
-Cette manipulation de bits permet de faire la même chose que la condition `if (num < 0)`, mais de manière plus rapide.
+Cette manipulation de bits permet de faire la même chose que la condition `if (num < 0)`, mais de manière plus rapide sans utiliser de branchement.
 
 Voici [le code assembleur](https://godbolt.org/z/WM6jrMd67).
 
 Et pour finir, en utilisant [l'optimisation de compilation](https://godbolt.org/z/WM6jrMd67) `-O3`:
 
-Nous voyons que le compilateur utilse une instruction `cmovs` pour faire la même chose que notre manipulation de bits, mais de manière plus lisible et avec moins de ligne de code
+Nous voyons que le compilateur utilse une instruction `cmovs` pour faire la même chose que notre manipulation de bits.
 
 ## **Code plus complexe du Laboratoire 1**
 
