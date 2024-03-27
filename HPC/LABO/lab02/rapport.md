@@ -65,6 +65,175 @@ Date:
 
 ## **Introduction**
 
+voici les sorties terminal des différents algorithmes sur les images apres la commande 
+
+**sudo likwid-perfctr -C E:N:4 -g MEM_DP -m ./lab02 in.png out.png 2**
+
+  
+
+voici les résultats des différents algorithmes sur les images:
+
+| Image | Taille | Algorithme | MFLOP/s | Bandwidth MBytes/s | Operational intensity |
+|-------|--------|------------|---------|--------------------|-----------------------|
+| small | 100x100 | 1D | 53.9394 | 738.4414 | 0.0730 |
+| small | 100x100 | linked list | 3.7040 | 1495.4562 | 0.0025 |
+| nyc | 1150x710 | 1D | 168.0232 | 781.7181 | 0.2149 |
+| nyc | 1150x710 | linked list | 0.3947 | 279.9790 | 0.0014 |
+| medaillon | 1267x919 | 1D | 160.0219 | 1629.6632 | 0.0982 |
+| medaillon | 1267x919 | linked list | 0.3237 | 3878.0047 | 0.0001 |
+| half_life | 2000x2090 | 1D | 185.6797 | 1082.3654 | 0.1715 |
+| half_life | 2000x2090 | linked list | 0.2288 | 573.9938 | 0.0004 |
+
+
+## **Analyse des performances**
+
+Les performances des différentes implémentations des algorithmes de traitement d'images sont mesurées en termes de métriques telles que le temps d'exécution, la consommation d'énergie, la puissance, le nombre d'opérations en virgule flottante par seconde (MFLOP/s), la bande passante mémoire, le volume de données mémoire, l'intensité opérationnelle, le nombre de cycles par instruction (CPI), la fréquence du processeur, etc. Les performances des algorithmes sont mesurées pour les images de taille 100x100, 2000x2090, 1267x919 et 1150x710. 
+
+Nous avons deux implémentations pour chaque image, une implémentation utilisant un tableau et une autre utilisant une liste chaînée. Les performances des algorithmes sont mesurées pour les deux implémentations.
+
+Les performances des algorithmes de traitement d'images sont mesurées en utilisant l'outil de profilage likwid. Les métriques mesurées sont les suivantes:
+
+- **Runtime (RDTSC) [s]**: Temps d'exécution en secondes mesuré en utilisant le registre RDTSC.
+- **Runtime unhalted [s]**: Temps d'exécution en secondes mesuré en utilisant le registre unhalted.
+- **Clock [MHz]**: Fréquence du processeur en MHz.
+- **CPI**: Nombre de cycles par instruction.
+- **Energy [J]**: Consommation d'énergie en Joules.
+- **Power [W]**: Puissance en Watts.
+- **Energy DRAM [J]**: Consommation d'énergie de la mémoire DRAM en Joules.
+- **Power DRAM [W]**: Puissance de la mémoire DRAM en Watts.
+- **DP [MFLOP/s]**: Nombre d'opérations en virgule flottante par seconde.
+- **AVX DP [MFLOP/s]**: Nombre d'opérations en virgule flottante par seconde utilisant AVX.
+- **Packed [MUOPS/s]**: Nombre d'opérations vectorielles par seconde.
+- **Scalar [MUOPS/s]**: Nombre d'opérations vectorielles par seconde.
+- **Memory load bandwidth [MBytes/s]**: Bande passante de chargement mémoire en MBytes/s.
+- **Memory load data volume [GBytes]**: Volume de données mémoire chargées en GBytes.
+- **Memory evict bandwidth [MBytes/s]**: Bande passante d'éviction mémoire en MBytes/s.
+- **Memory evict data volume [GBytes]**: Volume de données mémoire évacuées en GBytes.
+- **Memory bandwidth [MBytes/s]**: Bande passante mémoire en MBytes/s.
+- **Memory data volume [GBytes]**: Volume de données mémoire en GBytes.
+- **Operational intensity**: Intensité opérationnelle.
+
+Nous remarquons que lors des différentes mesures, les performances des algorithmes utilisant des listes chaînées sont inférieures à celles utilisant des tableaux. Cela est dû au fait que les listes chaînées nécessitent plus d'accès mémoire et de déplacements de pointeurs, ce qui entraîne une augmentation de la latence et une diminution des performances. Les performances des algorithmes dépendent également de la taille de l'image et de la complexité de l'algorithme. Les performances des algorithmes sont également influencées par la bande passante mémoire et la fréquence du processeur. Les performances des algorithmes peuvent être améliorées en utilisant des techniques d'optimisation telles que la parallélisation, la vectorisation, la réduction de la latence mémoire, etc.
+
+Vu la compilation en O3, les optimisation basique sont deja effectuée par le compilateur, il est donc difficile de faire mieux que ce qui est deja fait.
+
+Le code semble assez efficace, de base il est deja optimisé, il est difficile pour ma part de faire mieux que ce qui est deja fait.
+
+\pagebreak
+
+## **Graphiques des performances**
+voici Le roofline model construit grace aux commande suivante:
+
+```bash
+$ likwid-topology # recupere les informations sur le processeur
+
+likwid-bench -t load -W N:2GB:8 # mesure la bande passante de chargement mémoire
+
+likwid-bench -t peakflops -W N:256kB:8 # mesure le nombre d'opérations en virgule flottante par seconde
+```
+
+![graph](./roofline_basic.png){ width=80% }
+
+Le graphe avec les resultat des images est tres dur a lire mais le voici:
+
+![graph](./roofline_lrg.png){ width=80% }
+
+
+\pagebreak
+
+#### **Environnement d'execution**
+
+Le système décrit dispose d'un processeur Intel Core i7-8550U avec 8 threads, répartis sur 4 cœurs physiques. La fréquence du processeur est de 1,80 GHz avec une fréquence mesurée de 1432,548 MHz. 
+
+Voici plus ample information sur le processeur:
+
+```bash
+$ cat /proc/cpuinfo 
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 142
+model name	: Intel(R) Core(TM) i7-8550U CPU @ 1.80GHz
+stepping	: 10
+microcode	: 0xf4
+cpu MHz		: 1432.548
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 8
+core id		: 0
+cpu cores	: 4
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 22
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb invpcid_single pti ssbd ibrs ibpb stibp tpr_shadow vnmi flexpriority ept vpid ept_ad fsgsbase tsc_adjust sgx bmi1 avx2 smep bmi2 erms invpcid mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1 xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp md_clear flush_l1d arch_capabilities
+vmx flags	: vnmi preemption_timer invvpid ept_x_only ept_ad ept_1gb flexpriority tsc_offset vtpr mtf vapic ept vpid unrestricted_guest ple pml ept_mode_based_exec
+bugs		: cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs itlb_multihit srbds mmio_stale_data retbleed gds
+bogomips	: 3999.93
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+```
+
+#### sortie de likwid-topology
+```bash
+$ likwid-topology 
+--------------------------------------------------------------------------------
+CPU name:	Intel(R) Core(TM) i7-8550U CPU @ 1.80GHz
+CPU type:	Intel Kabylake processor
+CPU stepping:	10
+********************************************************************************
+Hardware Thread Topology
+********************************************************************************
+Sockets:		1
+Cores per socket:	4
+Threads per core:	2
+--------------------------------------------------------------------------------
+HWThread	Thread		Core		Socket		Available
+0		0		0		0		*
+1		0		1		0		*
+2		0		2		0		*
+3		0		3		0		*
+4		1		0		0		*
+5		1		1		0		*
+6		1		2		0		*
+7		1		3		0		*
+--------------------------------------------------------------------------------
+Socket 0:		( 0 4 1 5 2 6 3 7 )
+--------------------------------------------------------------------------------
+********************************************************************************
+Cache Topology
+********************************************************************************
+Level:			1
+Size:			32 kB
+Cache groups:		( 0 4 ) ( 1 5 ) ( 2 6 ) ( 3 7 )
+--------------------------------------------------------------------------------
+Level:			2
+Size:			256 kB
+Cache groups:		( 0 4 ) ( 1 5 ) ( 2 6 ) ( 3 7 )
+--------------------------------------------------------------------------------
+Level:			3
+Size:			8 MB
+Cache groups:		( 0 4 1 5 2 6 3 7 )
+--------------------------------------------------------------------------------
+********************************************************************************
+NUMA Topology
+********************************************************************************
+NUMA domains:		1
+--------------------------------------------------------------------------------
+Domain:			0
+Processors:		( 0 4 1 5 2 6 3 7 )
+Distances:		10
+Free memory:		542.145 MB
+Total memory:		7695.82 MB
+--------------------------------------------------------------------------------
+
+```
+
+#### sortie de likwid-perfctr
+
 ```bash
 
 array perf on 100x100 image
@@ -284,145 +453,4 @@ nyc 1150X710
 |       Operational intensity       |     0.0014 |
 +-----------------------------------+------------+
 
-
-
-
-```
-
-For array perf 100x100 we have a maxperf 53.9394 MFLOP/s and a max bandwidth of 738.4414 MBytes/s and an operational intensity of 0.0730
-
-For linked list perf 100x100 we have a maxperf 3.7040 MFLOP/s and a max bandwidth of 1495.4562 MBytes/s and an operational intensity of 0.0025
-
-For half life 2000x2090 we have a maxperf 185.6797 MFLOP/s and a max bandwidth of 1082.3654 MBytes/s and an operational intensity of 0.1715
-
-For half life 2000x2090 linked list we have a maxperf 0.2288 MFLOP/s and a max bandwidth of 573.9938 MBytes/s and an operational intensity of 0.0004
-
-For medaillon 1267x919  we have a maxperf 160.0219 MFLOP/s and a max bandwidth of 1629.6632 MBytes/s and an operational intensity of 0.0982
-
-For medaillon 1267x919 linked list we have a maxperf 0.3237 MFLOP/s and a max bandwidth of 3878.0047 MBytes/s and an operational intensity of 0.0001
-
-For nyc 1150x710 we have a maxperf 168.0232 MFLOP/s and a max bandwidth of 781.7181 MBytes/s and an operational intensity of 0.2149
-
-For nyc 1150x710 linked list we have a maxperf 0.3947 MFLOP/s and a max bandwidth of 279.9790 MBytes/s and an operational intensity of 0.0014
-
-## **Analyse des performances**
-
-Les performances des différentes implémentations des algorithmes de traitement d'images sont mesurées en termes de métriques telles que le temps d'exécution, la consommation d'énergie, la puissance, le nombre d'opérations en virgule flottante par seconde (MFLOP/s), la bande passante mémoire, le volume de données mémoire, l'intensité opérationnelle, le nombre de cycles par instruction (CPI), la fréquence du processeur, etc. Les performances des algorithmes sont mesurées pour les images de taille 100x100, 2000x2090, 1267x919 et 1150x710. 
-
-Nous avons deux implémentations pour chaque image, une implémentation utilisant un tableau et une autre utilisant une liste chaînée. Les performances des algorithmes sont mesurées pour les deux implémentations.
-
-Les performances des algorithmes de traitement d'images sont mesurées en utilisant l'outil de profilage likwid. Les métriques mesurées sont les suivantes:
-
-- **Runtime (RDTSC) [s]**: Temps d'exécution en secondes mesuré en utilisant le registre RDTSC.
-- **Runtime unhalted [s]**: Temps d'exécution en secondes mesuré en utilisant le registre unhalted.
-- **Clock [MHz]**: Fréquence du processeur en MHz.
-- **CPI**: Nombre de cycles par instruction.
-- **Energy [J]**: Consommation d'énergie en Joules.
-- **Power [W]**: Puissance en Watts.
-- **Energy DRAM [J]**: Consommation d'énergie de la mémoire DRAM en Joules.
-- **Power DRAM [W]**: Puissance de la mémoire DRAM en Watts.
-- **DP [MFLOP/s]**: Nombre d'opérations en virgule flottante par seconde.
-- **AVX DP [MFLOP/s]**: Nombre d'opérations en virgule flottante par seconde utilisant AVX.
-- **Packed [MUOPS/s]**: Nombre d'opérations vectorielles par seconde.
-- **Scalar [MUOPS/s]**: Nombre d'opérations vectorielles par seconde.
-- **Memory load bandwidth [MBytes/s]**: Bande passante de chargement mémoire en MBytes/s.
-- **Memory load data volume [GBytes]**: Volume de données mémoire chargées en GBytes.
-- **Memory evict bandwidth [MBytes/s]**: Bande passante d'éviction mémoire en MBytes/s.
-- **Memory evict data volume [GBytes]**: Volume de données mémoire évacuées en GBytes.
-- **Memory bandwidth [MBytes/s]**: Bande passante mémoire en MBytes/s.
-- **Memory data volume [GBytes]**: Volume de données mémoire en GBytes.
-- **Operational intensity**: Intensité opérationnelle.
-
-Nous remarquons que lors des differentes mesures, les performances des algorithmes utilisant des listes chaînées sont inférieures à celles utilisant des tableaux. Cela est dû au fait que les listes chaînées nécessitent plus d'accès mémoire et de déplacements de pointeurs, ce qui entraîne une augmentation de la latence et une diminution des performances. Les performances des algorithmes dépendent également de la taille de l'image et de la complexité de l'algorithme. Les performances des algorithmes sont également influencées par la bande passante mémoire et la fréquence du processeur. Les performances des algorithmes peuvent être améliorées en utilisant des techniques d'optimisation telles que la parallélisation, la vectorisation, la réduction de la latence mémoire, etc.
-
-![graph](graph.png){ width=80% }
-
-
-
-## **Environnement d'execution**
-
-Le système décrit dispose d'un processeur Intel Core i7-8550U avec 8 threads, répartis sur 4 cœurs physiques. La fréquence du processeur est de 1,80 GHz avec une fréquence mesurée de 1432,548 MHz. 
-
-Voici plus ample information sur le processeur:
-
-```bash
-$ cat /proc/cpuinfo 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 142
-model name	: Intel(R) Core(TM) i7-8550U CPU @ 1.80GHz
-stepping	: 10
-microcode	: 0xf4
-cpu MHz		: 1432.548
-cache size	: 8192 KB
-physical id	: 0
-siblings	: 8
-core id		: 0
-cpu cores	: 4
-apicid		: 0
-initial apicid	: 0
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 22
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb invpcid_single pti ssbd ibrs ibpb stibp tpr_shadow vnmi flexpriority ept vpid ept_ad fsgsbase tsc_adjust sgx bmi1 avx2 smep bmi2 erms invpcid mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1 xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp md_clear flush_l1d arch_capabilities
-vmx flags	: vnmi preemption_timer invvpid ept_x_only ept_ad ept_1gb flexpriority tsc_offset vtpr mtf vapic ept vpid unrestricted_guest ple pml ept_mode_based_exec
-bugs		: cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs itlb_multihit srbds mmio_stale_data retbleed gds
-bogomips	: 3999.93
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 39 bits physical, 48 bits virtual
-
-$ likwid-topology 
---------------------------------------------------------------------------------
-CPU name:	Intel(R) Core(TM) i7-8550U CPU @ 1.80GHz
-CPU type:	Intel Kabylake processor
-CPU stepping:	10
-********************************************************************************
-Hardware Thread Topology
-********************************************************************************
-Sockets:		1
-Cores per socket:	4
-Threads per core:	2
---------------------------------------------------------------------------------
-HWThread	Thread		Core		Socket		Available
-0		0		0		0		*
-1		0		1		0		*
-2		0		2		0		*
-3		0		3		0		*
-4		1		0		0		*
-5		1		1		0		*
-6		1		2		0		*
-7		1		3		0		*
---------------------------------------------------------------------------------
-Socket 0:		( 0 4 1 5 2 6 3 7 )
---------------------------------------------------------------------------------
-********************************************************************************
-Cache Topology
-********************************************************************************
-Level:			1
-Size:			32 kB
-Cache groups:		( 0 4 ) ( 1 5 ) ( 2 6 ) ( 3 7 )
---------------------------------------------------------------------------------
-Level:			2
-Size:			256 kB
-Cache groups:		( 0 4 ) ( 1 5 ) ( 2 6 ) ( 3 7 )
---------------------------------------------------------------------------------
-Level:			3
-Size:			8 MB
-Cache groups:		( 0 4 1 5 2 6 3 7 )
---------------------------------------------------------------------------------
-********************************************************************************
-NUMA Topology
-********************************************************************************
-NUMA domains:		1
---------------------------------------------------------------------------------
-Domain:			0
-Processors:		( 0 4 1 5 2 6 3 7 )
-Distances:		10
-Free memory:		542.145 MB
-Total memory:		7695.82 MB
---------------------------------------------------------------------------------
-
-```
+```   

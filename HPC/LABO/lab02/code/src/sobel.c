@@ -67,7 +67,6 @@ struct img_1D_t *edge_detection_1D(const struct img_1D_t *input_img)
 
 void rgb_to_grayscale_1D(const struct img_1D_t *img, struct img_1D_t *result)
 {
-
     int components = img->components;
 
     if (components != COMPONENT_RGB && components != COMPONENT_RGBA)
@@ -78,23 +77,26 @@ void rgb_to_grayscale_1D(const struct img_1D_t *img, struct img_1D_t *result)
 
     int width = img->width;
     int height = img->height;
-    int size = width * height * components;
-    int j = 0;
+    int size = width * height;
 
-    for (int i = 0; i < size; i += components)
+    uint8_t *src = img->data;
+    uint8_t *dst = result->data;
+
+    for (int i = 0; i < size; i++)
     {
+        int index = i * components;
+        uint8_t r = src[index + R_OFFSET];
+        uint8_t g = src[index + G_OFFSET];
+        uint8_t b = src[index + B_OFFSET];
 
-        uint8_t r = img->data[i + R_OFFSET];
-        uint8_t g = img->data[i + G_OFFSET];
-        uint8_t b = img->data[i + B_OFFSET];
-
-        result->data[j++] = (uint8_t)(FACTOR_R * r + FACTOR_G * g + FACTOR_B * b);
+        dst[i] = (uint8_t)(FACTOR_R * r + FACTOR_G * g + FACTOR_B * b);
     }
 
     result->width = width;
     result->height = height;
     result->components = COMPONENT_GRAYSCALE;
 }
+
 
 void gaussian_filter_1D(const struct img_1D_t *img, struct img_1D_t *res_img, const uint16_t *kernel)
 {

@@ -39,7 +39,7 @@ Auteur(s):
 
 Professeur:
 
-- **DASSATI Alberto**
+- **DASSATTI Alberto**
   
 Assistant:
 
