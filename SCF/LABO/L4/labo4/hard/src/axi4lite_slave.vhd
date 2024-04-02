@@ -189,11 +189,11 @@ begin
     -- 0x00	    (0) | Constant (0xBADB100D)   | R
     -- 0x04	    (1) | Test Register           | RW
     -- 0x08	    (2) | Input Register 1        | R
-    -- 0x0C	    (3) | Edge Capture Register 1  | RW (TODO)
+    -- 0x0C	    (3) | Edge Capture Register   | RW (TODO)
     -- 0x10	    (4) | Input Register 2	      | R
     -- 0x14	    (5) | Output Register 1       | RW
-    -- 0x18	    (6) | Set Register 1           | W
-    -- 0x1C     (7) | Clear Register 1      | W  (TODO)
+    -- 0x18	    (6) | Set Register            | W
+    -- 0x1C     (7) | Clear Register          | W  (TODO)
     -- 0x20     (8) | Output Register 2       | RW (TODO)
     -- 0x24     (9) | Output Register 3       | RW 
 
@@ -225,7 +225,6 @@ begin
                                       output_reg_A_s(byte_index*8+7 downto byte_index*8) <= axi_wdata_i(byte_index*8+7 downto byte_index*8);
                                   end if;
                               end loop;
-
                               
                     when 6   => for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
                                     if ( axi_wstrb_i(byte_index) = '1' ) then
@@ -235,21 +234,6 @@ begin
                                             axi_wdata_i(byte_index*8+7 downto byte_index*8);
                                     end if;
                                 end loop;
-                    -- clear register A
-                    when 7 =>   for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
-                                    if ( axi_wstrb_i(byte_index) = '1' ) then
-                                        -- Respective byte enables are asserted as per write strobe slave register 5
-                                        output_reg_A_s(byte_index*8+7 downto byte_index*8) <= (others => '0');
-                                    end if;
-                                end loop;
-                    -- set register B
-                    when 8   => for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
-                                    if ( axi_wstrb_i(byte_index) = '1' ) then
-                                        -- Respective byte enables are asserted as per write strobe slave register 5
-                                        output_reg_B_s(byte_index*8+7 downto byte_index*8) <= axi_wdata_i(byte_index*8+7 downto byte_index*8);
-                                    end if;
-                                end loop;
-                                    
                     when 9   => for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
                                     if ( axi_wstrb_i(byte_index) = '1' ) then
                                         -- Respective byte enables are asserted as per write strobe slave register 5
