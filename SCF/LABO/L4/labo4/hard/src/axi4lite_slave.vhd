@@ -107,9 +107,9 @@ architecture rtl of axi4lite_slave is
     signal output_reg_C_s  : std_logic_vector(31 downto 0);
 
     ---------------------------------------------------------------------
-    signal input_reg_A_old_s  : std_logic_vector(input_reg_A_s'range);
+    signal input_reg_A_old_s  : std_logic_vector(31 downto 0);
+    signal edge_capture_s     : std_logic_vector(31 downto 0);
     ---------------------------------------------------------------------
-    
     signal dummy_cnt : unsigned(15 downto 0);
 
     signal byte_index   : integer;
@@ -201,6 +201,16 @@ begin
     -- 0x20     (8) | Output Register 2       | RW (TODO)
     -- 0x24     (9) | Output Register 3       | RW 
 
+    ---------------------------------------------------------------------
+    delta_cycle: process(clk_i, reset_s)
+    begin
+        if reset_s = '1' then
+            input_reg_A_old_s <= (others => '0');
+        elsif rising_edge(clk_i) then
+            input_reg_A_old_s <= input_reg_A_i;
+        end if;
+    end process;
+    ---------------------------------------------------------------------
     process (reset_s, clk_i)
         --number address to access 32 or 64 bits data
         variable int_waddr_v : natural;
@@ -213,6 +223,10 @@ begin
             axi_write_done_s <= '1';
         elsif rising_edge(clk_i) then
             axi_write_done_s <= '0';
+
+            ---------------------------------------------------------------------
+            edge_capture_s <= edge_capture_s or ( input_reg_A_i  and not input_reg_A_old_s);
+            ---------------------------------------------------------------------
             if axi_data_wren_s = '1' then
                 axi_write_done_s <= '1';
                 int_waddr_v   := to_integer(unsigned(axi_waddr_mem_s));
@@ -228,22 +242,11 @@ begin
                     when 3  => -- edge capture read input reg A and control with previous state of input reg A
                                 for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
                                     if ( axi_wstrb_i(byte_index) = '1' ) then
-                                        -- check for edge capture
-                                        if (input_reg_A_i(byte_index*8+7 downto byte_index*8) = '1' and input_reg_A_old_s(byte_index*8+7 downto byte_index*8) = '0') then
-                                            -- edge capture
-                                            internal_reg_s(byte_index*8+7 downto byte_index*8) <= '1';
-                                        else
-                                            --clear with 1 write to byte
-                                            if (axi_wdata_i(byte_index*8+7 downto byte_index*8) = '1') then
-                                                internal_reg_s(byte_index*8+7 downto byte_index*8) <= '0';
-                                            end if;
-                                        end if;
+                                        edge_capture_s(byte_index*8+7 downto byte_index*8) <= 
+                                            edge_capture_s(byte_index*8+7 downto byte_index*8) and not input_reg_A_old_s(byte_index*8+7 downto byte_index*8);
                                     end if;
                                 end loop;
-                                 -- update old led register
-                                input_reg_A_old_s <= input_reg_A_i;
                     ---------------------------------------------------------------------
-
                     when 5 => for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
                                   if ( axi_wstrb_i(byte_index) = '1' ) then
                                       -- Respective byte enables are asserted as per write strobe slave register 5
@@ -278,7 +281,6 @@ begin
                                     end if;
                                 end loop;
                     ---------------------------------------------------------------------  
-
                     when 9   => for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
                                     if ( axi_wstrb_i(byte_index) = '1' ) then
                                         -- Respective byte enables are asserted as per write strobe slave register 5
