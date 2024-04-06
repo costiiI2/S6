@@ -154,7 +154,7 @@ int abs(int num) {
 
 Voici [le code assembleur](https://godbolt.org/z/8zvzrjz8z).
 
-Nous pouvons optimiser ce code en utilisant un masque pour éviter de faire une comparaison inutile:
+Nous pouvons optimiser ce code en utilisant un masque pour éviter de faire une comparaison inutile ce qui pourrait créer un branchement:
 ```c
 int abs(int num) {
     int mask = num >> 31;
@@ -168,7 +168,7 @@ Voici [le code assembleur](https://godbolt.org/z/WM6jrMd67).
 
 Et pour finir, en utilisant [l'optimisation de compilation](https://godbolt.org/z/WM6jrMd67) `-O3`:
 
-Nous voyons que le compilateur utilse une instruction `cmovs` pour faire la même chose que notre manipulation de bits.
+Nous voyons que le compilateur utili    se une instruction `cmovs` pour faire la même chose que notre manipulation de bits mais evite de faire un branchement, ce qui accélère l'exécution de notre programme.
 
 ## **Code plus complexe du Laboratoire 1**
 
@@ -255,6 +255,10 @@ On peux deja voir que le code est plus court et plus lisible, mais on peux encor
  
 
 Grâce a l'optimisation de compilation `-O3`, on a pu réduire le code assembleur de la moitié environs ce qui va accélérer l'exécution de notre programme.
+
+Cette optimisation se base sur une incrementation basée sur le nombre de composants de l'image, ce qui permet de réduire le nombre d'instructions de la boucle, puis des multiplication directes pour calculer la valeur de la composante de l'image en niveaux de gris sans passer par des variables intermédiaires et ceci aussi dans les calculs RGB.
+
+Tout ceci reduit considérablement le nombre d'instructions et donc accélère l'exécution de notre programme.
 
 ## **Conclusion**
 
