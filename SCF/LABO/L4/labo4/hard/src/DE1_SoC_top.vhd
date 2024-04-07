@@ -78,9 +78,6 @@ entity DE1_SoC_top is
            HEX4_o       : out std_logic_vector(6 downto 0);
            HEX5_o       : out std_logic_vector(6 downto 0);
 
-           signal  HEX_0_3_s  : std_logic_vector(27 downto 0);
-           signal  HEX_4_5_s  : std_logic_vector(13 downto 0);
-
            -- IR
            IRDA_RXD_i   : in std_logic;
            IRDA_TXD_o   : out std_logic;
@@ -238,7 +235,7 @@ architecture top of DE1_SoC_top is
             -- LED
             hps_io_0_hps_io_gpio_inst_GPIO53  : inout std_logic                     := 'X' ;             -- hps_io_gpio_inst_GPIO53
 				
-			axi_slave_input_reg_a_i                : in    std_logic_vector(31 downto 0) := (others => 'X'); -- input_a
+			axi_slave_input_reg_a_i          : in    std_logic_vector(31 downto 0) := (others => 'X'); -- input_reg_a_i
 			axi_slave_input_reg_b_i          : in    std_logic_vector(31 downto 0) := (others => 'X'); -- input_reg_b_i
 			axi_slave_output_reg_a_o         : out   std_logic_vector(31 downto 0);                    -- output_reg_a_o
 			axi_slave_output_reg_c_o         : out   std_logic_vector(31 downto 0);                    -- output_reg_c_o
@@ -294,16 +291,16 @@ begin
 		hps_io_0_hps_io_gpio_inst_GPIO53  => HPS_LED_io,
 		
 		-- DE1_I/O
-		--leds_export     => LEDR_o,
-		--keys_export    	=> KEY_i,
-		--switches_export => SW_i,
-		--hex0_3_export(6 downto 0)  => HEX0_o,
-       -- hex0_3_export(13 downto 7) => HEX1_o,
-        --hex0_3_export(20 downto 14) => HEX2_o,
-        --hex0_3_export(27 downto 21) => HEX3_o,
-        --hex4_5_export(6 downto 0)  => HEX4_o,
-        --hex4_5_export(13 downto 7) => HEX5_o,
-		  
+		axi_slave_input_reg_a_i(3 downto 0)    	=> KEY_i,
+		axi_slave_input_reg_b_i(9 downto 0)   => SW_i,
+        axi_slave_output_reg_a_o(9 downto 0) => LEDR_o,
+        axi_slave_output_reg_b_o(6 downto 0) => HEX0_o,
+        axi_slave_output_reg_b_o(13 downto 7) => HEX1_o,
+        axi_slave_output_reg_b_o(20 downto 14) => HEX2_o,
+        axi_slave_output_reg_b_o(27 downto 21) => HEX3_o,
+        axi_slave_output_reg_c_o(6 downto 0) => HEX4_o,
+        axi_slave_output_reg_c_o(13 downto 7) => HEX5_o,
+	  
 
 		-- Clock
 		clk_clk                           	=> CLOCK_50_i

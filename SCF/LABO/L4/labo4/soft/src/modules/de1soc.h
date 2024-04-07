@@ -47,11 +47,11 @@
 #define INTERFACE_OFST		0x00000
 
 // Based offset defined by lad sheet
-#define OFST_LEDS		0x00
+#define OFST_LEDS		0x18
 #define OFST_KEYS		0x10
 #define OFST_SWITCHES		0x20
-#define OFST_HEX3_0		0x30
-#define OFST_HEX5_4		0x40
+#define OFST_HEX3_0		0x20
+#define OFST_HEX5_4		0x24
 #define EDGE_CAP		0xC
 
 

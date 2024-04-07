@@ -109,6 +109,7 @@ architecture rtl of axi4lite_slave is
     ---------------------------------------------------------------------
     signal input_reg_A_old_s  : std_logic_vector(31 downto 0);
     signal edge_capture_s     : std_logic_vector(31 downto 0);
+    signal reg_A_rising_edge_s : std_logic_vector(31 downto 0);
     ---------------------------------------------------------------------
     signal dummy_cnt : unsigned(15 downto 0);
 
@@ -202,12 +203,14 @@ begin
     -- 0x24     (9) | Output Register 3       | RW 
 
     ---------------------------------------------------------------------
+    reg_A_rising_edge_s <= (input_reg_A_s and not input_reg_A_old_s);
+    
     delta_cycle: process(clk_i, reset_s)
     begin
         if reset_s = '1' then
             input_reg_A_old_s <= (others => '0');
         elsif rising_edge(clk_i) then
-            input_reg_A_old_s <= input_reg_A_i;
+            input_reg_A_old_s <= input_reg_A_s;
         end if;
     end process;
     ---------------------------------------------------------------------
@@ -225,7 +228,7 @@ begin
             axi_write_done_s <= '0';
 
             ---------------------------------------------------------------------
-            edge_capture_s <= edge_capture_s or ( input_reg_A_i  and not input_reg_A_old_s);
+            edge_capture_s <= edge_capture_s or  reg_A_rising_edge_s;
             ---------------------------------------------------------------------
             if axi_data_wren_s = '1' then
                 axi_write_done_s <= '1';
@@ -237,13 +240,12 @@ begin
                                         internal_reg_s(byte_index*8+7 downto byte_index*8) <= axi_wdata_i(byte_index*8+7 downto byte_index*8);
                                     end if;
                                 end loop;
-
-                    ---------------------------------------------------------------------
+                    ----------------------- EDGE CAP -----------------------------
                     when 3  => -- edge capture read input reg A and control with previous state of input reg A
                                 for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
                                     if ( axi_wstrb_i(byte_index) = '1' ) then
                                         edge_capture_s(byte_index*8+7 downto byte_index*8) <= 
-                                            edge_capture_s(byte_index*8+7 downto byte_index*8) and not input_reg_A_old_s(byte_index*8+7 downto byte_index*8);
+                                            edge_capture_s(byte_index*8+7 downto byte_index*8) and not axi_wdata_i(byte_index*8+7 downto byte_index*8);
                                     end if;
                                 end loop;
                     ---------------------------------------------------------------------
@@ -263,7 +265,7 @@ begin
                                     end if;
                                 end loop;
 
-                    ---------------------------------------------------------------------
+                    --------------------------- CLEAR LED --------------------------------
                     when 7 => -- clear led
                                 for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
                                     if ( axi_wstrb_i(byte_index) = '1' ) then
@@ -273,6 +275,7 @@ begin
                                             not axi_wdata_i(byte_index*8+7 downto byte_index*8);
                                     end if;
                                 end loop;
+                    --------------------------- SET HEX  --------------------------------
                     when 8   => -- set hex
                                 for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
                                     if ( axi_wstrb_i(byte_index) = '1' ) then
@@ -414,7 +417,8 @@ begin
         input_reg_B_s, 
         output_reg_A_s, 
         output_reg_B_s, 
-        output_reg_C_s)
+        output_reg_C_s,
+        edge_capture_s)
         --number address to access 32 or 64 bits data
         variable int_raddr_v  : natural;
     begin
@@ -427,6 +431,11 @@ begin
                 axi_rdata_s <= internal_reg_s;
             when 2 =>
                 axi_rdata_s <= input_reg_A_s;
+
+            ------------------------ READ EDGE -----------------------------------
+            when 3 =>
+                axi_rdata_s <= edge_capture_s;
+            ---------------------------------------------------------------------
             when 4 =>
                 axi_rdata_s <= input_reg_B_s;
             when 5 =>
