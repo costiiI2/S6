@@ -27,30 +27,62 @@
 #include <stdio.h>
 #include "axi_lw.h"
 #include "modules/alfanum.h"
-#include "modules/de1soc.h"
 int __auto_semihosting;
+
+#define CNST 0x0
+#define TEST_REG 0x4
+#define KEYS 0x8 // not used for this program
+#define EDGE_CAP 0xC
+#define SWITCHES 0x10
+#define LED_OFFSET 0x14
+#define LED_SET 0x18 // not used for this program
+#define LED_CLR 0x1C // not used for this program
+#define HEX3_0_OFFSET 0x20
+#define HEX5_4_OFFSET 0x24
+
+#define LED_ON 0x3FF
+#define LED_OFF 0x0
+
+#define KEY_0			(1 << 0)
+#define KEY_1			(1 << 1)
+#define KEY_2			(1 << 2)
+#define KEY_3			(1 << 3)
+
+#define MIN_VAL 0
+#define MAX_VAL 1023
 
 #define CST 0xBADB100D
 
+#define ITF_REG(_x_)	*(volatile uint32_t *)							\
+						((AXI_LW_HPS_FPGA_BASE_ADD) + _x_)
+
+
+                        
 static uint8_t key_pressed = 0;
 static uint8_t error = 0;
-static uint8_t hex = 0;
+static uint16_t hex = 0;
 
+void write_leds(uint32_t maskled)
+{
+    ITF_REG(LED_OFFSET) = maskled;
+}
 
+uint32_t read_switches()
+{
+    return ITF_REG(SWITCHES);
+}
 
 void setup()
 {
     /* read CST */
-    if (ITF_REG(0x0) != CST)
+    if (ITF_REG(CNST) != CST)
     {
-      // break;
       error = 1;
     }
     /* test read write */
-    ITF_REG(0x4) = CST;
-    if (ITF_REG(0x4) != CST)
+    ITF_REG(TEST_REG) = CST;
+    if (ITF_REG(TEST_REG) != CST)
     {
-      // break;
       error = 1;
     }
 
@@ -59,33 +91,41 @@ void setup()
        return;
     }
     /* Base set up*/
-    write_leds(OFF);
-    for (int i = 0; i < HEX_COUNT; i++)
-        write_7seg_hex(i, OFF);
+    write_leds(LED_OFF);
 }
 
 void clear_key_pressed(int key_pressed)
 {
+    /* clear error */
     if (error == 1)
     {
-        write_leds(0x0);
+        write_leds(LED_OFF);
         error = 0;
     }
+    /* clear key */
     ITF_REG(EDGE_CAP) = key_pressed;
 }
 
 void decimal_write_7segs_hex3_0(int val)
 {
-    int val_save = val;
-    int hex = 0;
-    int i = 0;
-    while (val_save > 0)
+   
+    uint32_t hex0_3 = 0;
+    uint32_t hex4_5 = 0;
+   
+    for (int i = 0; i < 6; i++)
+{
+    if (i < 4)
     {
-        hex = val_save % 16;
-        write_7seg_hex(i, hex);
-        val_save = val_save / 16;
-        i++;
+        hex0_3 = hex0_3 | (hexa[val % 10] << (i * 7));
     }
+    else
+    {
+        hex4_5 = hex4_5 | (hexa[val % 10] << ((i - 4) * 7));
+    }
+    val = val / 10;
+}
+    ITF_REG(HEX3_0_OFFSET) = ~hex0_3;
+    ITF_REG(HEX5_4_OFFSET) = ~hex4_5;
 }
     
 
@@ -93,57 +133,46 @@ int main(void)
 {
 
     setup();
+    /* check if error while initializing */
     if (error == 1)
-    {
-        
         return 1;
-    }
-          
-
-    key_pressed = 0;
+    
     while (1)
     {
-        // read the key pressed
         key_pressed = ITF_REG(EDGE_CAP);
-
-        // write val in decimal
 
         if (key_pressed & KEY_0)
         {
-            hex = get_switches();
-            write_leds(0x1) ;
             clear_key_pressed(KEY_0);
+            hex = read_switches();
         }
         if (key_pressed & KEY_1)
         {
             clear_key_pressed(KEY_1);
-            /*if (hex == 1023){
-                write_leds(0x3FF);
+            if (hex == MIN_VAL){
+                write_leds(LED_ON);
                 error = 1;
                 continue;
-            }*/
-            write_leds(0x2) ;
-            hex++;
+            }
+            hex--;
         }
         if (key_pressed & KEY_2)
         {
             clear_key_pressed(KEY_2);
-           /* if (hex == 0){
-                write_leds(0x3FF);
+            if (hex == MAX_VAL){
+                write_leds(LED_ON);
                 error = 1;
                 continue;
-            }*/
-            write_leds(0x4) ;
-                        hex--;
+            }
+                        hex++;
         }
         if (key_pressed & KEY_3)
         {
             clear_key_pressed(KEY_3);
             hex = 0;
-            write_leds(0x8) ;
         }
 
-        //decimal_write_7segs_hex3_0(hex);
+        decimal_write_7segs_hex3_0(hex);
 
     }
 }

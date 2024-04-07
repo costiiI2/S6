@@ -203,16 +203,19 @@ begin
     -- 0x24     (9) | Output Register 3       | RW 
 
     ---------------------------------------------------------------------
-    reg_A_rising_edge_s <= (input_reg_A_s and not input_reg_A_old_s);
-    
-    delta_cycle: process(clk_i, reset_s)
+
+    delay_for_edge: process(clk_i, reset_s)
     begin
         if reset_s = '1' then
             input_reg_A_old_s <= (others => '0');
-        elsif rising_edge(clk_i) then
+            elsif rising_edge(clk_i) then
             input_reg_A_old_s <= input_reg_A_s;
+            reg_A_rising_edge_s <= input_reg_A_s and not input_reg_A_old_s;
+
+            ---------------------------------------------------------------------
         end if;
     end process;
+  
     ---------------------------------------------------------------------
     process (reset_s, clk_i)
         --number address to access 32 or 64 bits data
@@ -227,8 +230,8 @@ begin
         elsif rising_edge(clk_i) then
             axi_write_done_s <= '0';
 
-            ---------------------------------------------------------------------
-            edge_capture_s <= edge_capture_s or  reg_A_rising_edge_s;
+            edge_capture_s <= edge_capture_s or reg_A_rising_edge_s;
+
             ---------------------------------------------------------------------
             if axi_data_wren_s = '1' then
                 axi_write_done_s <= '1';
@@ -311,6 +314,8 @@ begin
         end if;
     end process;
 
+
+  
 -----------------------------------------------------------
 -- Write respond channel
 
