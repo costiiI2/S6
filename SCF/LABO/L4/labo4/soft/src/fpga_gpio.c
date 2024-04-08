@@ -106,7 +106,7 @@ void clear_key_pressed(int key_pressed)
     ITF_REG(EDGE_CAP) = key_pressed;
 }
 
-void decimal_write_7segs_hex3_0(int val)
+void decimal_write_hex(int val)
 {
    
     uint32_t hex0_3 = 0;
@@ -172,7 +172,7 @@ int main(void)
             hex = 0;
         }
 
-        decimal_write_7segs_hex3_0(hex);
+        decimal_write_hex(hex);
 
     }
 }
