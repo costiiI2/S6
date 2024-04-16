@@ -65,7 +65,7 @@ Date:
 
 ## **Introduction**
 
-Pour ce laboratoire, nous devons utiliser [godbolt](https://godbolt.org/) pour analyser du code C et montrer les différences entre différentes optimisations de compilation.
+Pour ce laboratoire, nous devons utiliser [**godbolt**](https://godbolt.org/) pour analyser du code C et montrer les différences entre différentes optimisations de compilation.
 
 Je vais utiliser X86-64 GCC 13.2 avec l'option `-O3` et sans optimisation.
 
@@ -81,7 +81,7 @@ int square(int num) {
 
 Cette fonction est clairement mal écrite car elle utilise une variable inutile. En effet, on pourrait simplement retourner `num * num` et cela fonctionnerait de la même manière.
 
-Mais en voici néanmoins [le code assembleur](https://godbolt.org/z/x5h1vdjY8).
+Mais en voici néanmoins [**le code assembleur**](https://godbolt.org/z/x5h1vdjY8).
 
 Si l'on corrige cette erreur, le code sera plus simple et plus rapide:
 ```c
@@ -90,11 +90,11 @@ int square(int num) {
 }
 ```
 
-en voici [le code assembleur](https://godbolt.org/z/WqxP99hvY).
+en voici [**le code assembleur**](https://godbolt.org/z/WqxP99hvY).
 
 nous remarquons tout de suite une amélioration dans le code assembleur généré.
 
-Mais nous pouvons faire mieux grâce à [l'optimisation de compilation](https://godbolt.org/z/cPsc38T6o) `-O3`.
+Mais nous pouvons faire mieux grâce à [**l'optimisation de compilation**](https://godbolt.org/z/cPsc38T6o) `-O3`.
 
 
 
@@ -118,7 +118,7 @@ int sum(int *arr, int size) {
 }
 ```
 
-Voici [le code assembleur](https://godbolt.org/z/n1hK79h1E).
+Voici [**le code assembleur**](https://godbolt.org/z/n1hK79h1E).
 
 Nous pouvons optimiser ce code en utilisant un pointeur `p` pour éviter de faire des calculs inutiles à chaque itération de la boucle:
 ```c
@@ -132,9 +132,9 @@ int sum(int *arr, int size) {
 }
 ```
 
-Voici [le code assembleur](https://godbolt.org/z/snzfroceK).
+Voici [**le code assembleur**](https://godbolt.org/z/snzfroceK).
 
-Puis en utilisant [l'optimisation de compilation](https://godbolt.org/z/qYbY95v8j) `-O3`:
+Puis en utilisant [**l'optimisation de compilation**](https://godbolt.org/z/qYbY95v8j) `-O3`:
 
 Ici nous remarquons que le code généré fait le double de la taille du code généré sans optimisation, mais il est plus rapide dans certains cas.
 
@@ -152,7 +152,7 @@ int abs(int num) {
 }
 ```
 
-Voici [le code assembleur](https://godbolt.org/z/8zvzrjz8z).
+Voici [**le code assembleur**](https://godbolt.org/z/8zvzrjz8z).
 
 Nous pouvons optimiser ce code en utilisant un masque pour éviter de faire une comparaison inutile ce qui pourrait créer un branchement:
 ```c
@@ -164,9 +164,9 @@ int abs(int num) {
 
 Cette manipulation de bits permet de faire la même chose que la condition `if (num < 0)`, mais de manière plus rapide sans utiliser de branchement.
 
-Voici [le code assembleur](https://godbolt.org/z/WM6jrMd67).
+Voici [**le code assembleur**](https://godbolt.org/z/WM6jrMd67).
 
-Et pour finir, en utilisant [l'optimisation de compilation](https://godbolt.org/z/WM6jrMd67) `-O3`:
+Et pour finir, en utilisant [**l'optimisation de compilation**](https://godbolt.org/z/WM6jrMd67) `-O3`:
 
 Nous voyons que le compilateur utili    se une instruction `cmovs` pour faire la même chose que notre manipulation de bits mais evite de faire un branchement, ce qui accélère l'exécution de notre programme.
 
@@ -207,7 +207,7 @@ void rgb_to_grayscale_1D(const struct img_1D_t *img, struct img_1D_t *result)
 }
 ```
 
-Cette fonction génère [un code assembleur assez long](https://godbolt.org/z/sccb7zKcf).
+Cette fonction génère [**un code assembleur assez long**](https://godbolt.org/z/sccb7zKcf).
 
 Ce code est pas optimisé, on peux le simplifier en utilisant les pointeurs `src` et `dst` pour éviter de faire des calculs inutiles à chaque itération de la boucle, et on peux aussi simplifié la condition de la boucle.
 On peux optimiser ce code nous même comme suit
@@ -248,10 +248,10 @@ void rgb_to_grayscale_1D(const struct img_1D_t *img, struct img_1D_t *result)
 
 ``` 
 
-Ce code génère [le code assembleur suivant](https://godbolt.org/z/YevvsbErW)
+Ce code génère [**le code assembleur suivant**](https://godbolt.org/z/YevvsbErW)
 
 
-On peux deja voir que le code est plus court et plus lisible, mais on peux encore l'optimiser en utilisant [l'optimisation de compilation](https://godbolt.org/z/94Ehzvafo)`-O3`:
+On peux deja voir que le code est plus court et plus lisible, mais on peux encore l'optimiser en utilisant [**l'optimisation de compilation**](https://godbolt.org/z/94Ehzvafo)`-O3`:
  
 
 Grâce a l'optimisation de compilation `-O3`, on a pu réduire le code assembleur de la moitié environs ce qui va accélérer l'exécution de notre programme.

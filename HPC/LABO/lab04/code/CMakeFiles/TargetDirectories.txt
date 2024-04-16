@@ -1,0 +1,4 @@
+/home/costi/Desktop/S6/HPC/LABO/lab04/code/CMakeFiles/edge_detection.dir
+/home/costi/Desktop/S6/HPC/LABO/lab04/code/CMakeFiles/segmentation.dir
+/home/costi/Desktop/S6/HPC/LABO/lab04/code/CMakeFiles/edit_cache.dir
+/home/costi/Desktop/S6/HPC/LABO/lab04/code/CMakeFiles/rebuild_cache.dir

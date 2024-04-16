@@ -38,7 +38,7 @@ Auteur(s):
 Professeur:
 
 - **DASSATTI Alberto**
-- **YANN Thoma**
+- **YANN Thomas**
   
 Assistant:
 
