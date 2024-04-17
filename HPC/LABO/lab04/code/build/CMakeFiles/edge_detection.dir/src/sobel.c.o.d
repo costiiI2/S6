@@ -57,9 +57,13 @@ CMakeFiles/edge_detection.dir/src/sobel.c.o: \
  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
- /usr/include/x86_64-linux-gnu/bits/mathcalls.h /usr/include/assert.h \
+ /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
  /home/costi/Desktop/S6/HPC/LABO/lab04/code/include/image.h \
  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdint.h /usr/include/stdint.h \
  /usr/include/x86_64-linux-gnu/bits/wchar.h \
  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
- /home/costi/Desktop/S6/HPC/LABO/lab04/code/include/sobel.h
+ /home/costi/Desktop/S6/HPC/LABO/lab04/code/include/sobel.h \
+ /usr/lib/gcc/x86_64-linux-gnu/11/include/xmmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/11/include/mmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/11/include/mm_malloc.h \
+ /usr/lib/gcc/x86_64-linux-gnu/11/include/emmintrin.h

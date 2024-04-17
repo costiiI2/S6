@@ -65,7 +65,7 @@ Date:
 
 ## **Introduction**
 
-Dans ce laboratoire il faut optimiser du code en utilisantr des operations SIMD
+Dans ce laboratoire il faut optimiser du code en utilisant des operations SIMD
 
 ## **Optimisation du code**
 
@@ -84,6 +84,26 @@ Cette fonction implémente l'algorithme kmeans++ pour initialiser les centres de
 Cette fonction peux être optimisée en utilisant les operations SIMD pour calculer la distance euclidean entre les pixels et les centres des clusters sans fair appel a la fonction distance.
 
 De plus les allocations dynamique peuvent être évitées en sauvegardant les valeurs RGB des pixels dans les registres SIMD, ici aussi on a un bit de padding pour avoir 4 valeurs dans un registre SIMD, ce dernier pourrait servir pour des images en RGBA.
+
+### fonction 3 **kmeans**
+
+Cette fonction implémente l'algorithme kmeans pour regrouper les pixels en clusters.
+
+Elle utilise la fonction kmens_pp pour initialiser les centres des clusters, puis elle assigne chaque pixel au cluster le plus proche.
+
+Notre optimisation se base sur des operation simd pour l'assignation des pixels aux clusters, en effet on va calculer la distance euclidean entre les pixels et les centres des clusters en utilisant les operations SIMD.
+
+Puis on optimisera la mise a jour des centres des clusters en utilisant les operations SIMD.
+
+Et pour finir on updatera l'image avec les clusters en utilisant les operations SIMD.
+
+## Optimisation du filtre de sobel
+
+Pour cette partie nous avons du optimiser notre code du labo précédent en utilisant les operations SIMD.
+
+Ici il faut se rendre compte que on peux que optimiser la code utilisant les tableaux car avec les liste chaînées les données peuvent ne pas être contiguës en mémoire.
+
+Pour la partie optimisation on va utiliser les operations SIMD pour les calculs utilisant les kernels car on peut effectuer des operations sur les 4 pixels en parallèle.
 
 
 

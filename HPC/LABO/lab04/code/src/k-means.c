@@ -10,8 +10,6 @@
 #error "SSE is not supported on this platform"
 #endif
 
-#include <xmmintrin.h> // Header file for SSE
-
 // This function will calculate the euclidean distance between two pixels.
 // Instead of using coordinates, we use the RGB value for evaluating distance.
 float distance(uint8_t *p1, uint8_t *p2)
@@ -87,10 +85,10 @@ void kmeans_pp(struct img_1D_t *image, int num_clusters, uint8_t *centers)
         int index = 0;
 
         // Choose the next center based on weighted probability
-        while (index < image->width * image->height && r > distances[index]) 
+        while (index < image->width * image->height && r > distances[index])
         {
-           r -= distances[index];
-           index++;
+            r -= distances[index];
+            index++;
         }
 
         // Set the RGB values of the selected center
@@ -124,11 +122,8 @@ void kmeans_pp(struct img_1D_t *image, int num_clusters, uint8_t *centers)
         }
     }
     free(distances);
-
 }
 
-// This function performs k-means clustering on an image.
-// It takes as input the image, its dimensions (width and height), and the number of clusters to find.
 void kmeans(struct img_1D_t *image, int num_clusters)
 {
     uint8_t *centers = calloc(num_clusters * image->components, sizeof(uint8_t));
@@ -136,7 +131,7 @@ void kmeans(struct img_1D_t *image, int num_clusters)
     // Initialize the cluster centers using the k-means++ algorithm.
     kmeans_pp(image, num_clusters, centers);
 
-    int *assignments = (int *)malloc(image->width * image->height * sizeof(int));
+    int *assignments = (int *)calloc(image->width * image->height, sizeof(int));
 
     // Assign each pixel in the image to its nearest cluster.
     for (int i = 0; i < image->width * image->height; ++i)
@@ -144,15 +139,24 @@ void kmeans(struct img_1D_t *image, int num_clusters)
         float min_dist = INFINITY;
         int best_cluster = -1;
 
-        uint8_t *src = malloc(image->components * sizeof(uint8_t));
-        memcpy(src, image->data + i * image->components, image->components * sizeof(uint8_t));
+        __m128 src = _mm_set_ps(0, image->data[i * image->components + R_OFFSET],
+                                image->data[i * image->components + G_OFFSET],
+                                image->data[i * image->components + B_OFFSET]);
 
         for (int c = 0; c < num_clusters; c++)
         {
-            uint8_t *dest = malloc(image->components * sizeof(uint8_t));
-            memcpy(dest, centers + c * image->components, image->components * sizeof(uint8_t));
+            __m128 dest = _mm_set_ps(0, centers[c * image->components + R_OFFSET],
+                                     centers[c * image->components + G_OFFSET],
+                                     centers[c * image->components + B_OFFSET]);
 
-            float dist = distance(src, dest);
+            __m128 diff = _mm_sub_ps(src, dest);
+            __m128 square_diff = _mm_mul_ps(diff, diff);
+            __m128 sum = _mm_add_ps(square_diff, _mm_movehl_ps(square_diff, square_diff));
+            sum = _mm_add_ss(sum, _mm_shuffle_ps(sum, sum, 1));
+            __m128 result = _mm_sqrt_ss(sum);
+
+            float dist;
+            _mm_store_ss(&dist, result);
 
             if (dist < min_dist)
             {
@@ -181,9 +185,15 @@ void kmeans(struct img_1D_t *image, int num_clusters)
     {
         if (cluster_data[c].count > 0)
         {
-            centers[c * image->components + R_OFFSET] = cluster_data[c].sum_r / cluster_data[c].count;
-            centers[c * image->components + G_OFFSET] = cluster_data[c].sum_g / cluster_data[c].count;
-            centers[c * image->components + B_OFFSET] = cluster_data[c].sum_b / cluster_data[c].count;
+            __m128 sum = _mm_set_ps(0, cluster_data[c].sum_r, cluster_data[c].sum_g, cluster_data[c].sum_b);
+            __m128 count = _mm_set1_ps(cluster_data[c].count);
+            __m128 center = _mm_div_ps(sum, count);
+
+            centers[c * image->components + R_OFFSET] = (uint8_t)_mm_cvtss_f32(_mm_shuffle_ps(center, center, _MM_SHUFFLE(0, 0, 0, 0)));
+
+            centers[c * image->components + G_OFFSET] = (uint8_t)_mm_cvtss_f32(_mm_shuffle_ps(center, center, _MM_SHUFFLE(0, 0, 0, 1)));
+
+            centers[c * image->components + B_OFFSET] = (uint8_t)_mm_cvtss_f32(_mm_shuffle_ps(center, center, _MM_SHUFFLE(0, 0, 0, 2)));
         }
     }
 
@@ -193,6 +203,7 @@ void kmeans(struct img_1D_t *image, int num_clusters)
     for (int i = 0; i < image->width * image->height; ++i)
     {
         int cluster = assignments[i];
+
         image->data[i * image->components + R_OFFSET] = centers[cluster * image->components + R_OFFSET];
         image->data[i * image->components + G_OFFSET] = centers[cluster * image->components + G_OFFSET];
         image->data[i * image->components + B_OFFSET] = centers[cluster * image->components + B_OFFSET];

@@ -170,7 +170,11 @@ CMakeFiles/segmentation.dir/src/k-means.c.o: ../src/k-means.c \
   /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
   /usr/include/strings.h \
   /usr/include/x86_64-linux-gnu/bits/strings_fortified.h \
-  /usr/include/x86_64-linux-gnu/bits/string_fortified.h
+  /usr/include/x86_64-linux-gnu/bits/string_fortified.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/xmmintrin.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/mmintrin.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/mm_malloc.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/emmintrin.h
 
 CMakeFiles/segmentation.dir/src/main_segmentation.c.o: ../src/main_segmentation.c \
   /usr/include/stdc-predef.h \
