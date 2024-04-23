@@ -39,6 +39,11 @@
 			linux,default-trigger = "heartbeat";
 		};
 	};
+
+	gnegne {
+		compatible = "SCF";
+		status = "okay";
+	};
 };
 
 &fpga_bridge0 {
@@ -46,10 +51,7 @@
         status = "okay";
 };
 
-gnegne {
-	compatible = "SCF";
-	status = "okay";
-}
+
 
 
 &gmac1 {
