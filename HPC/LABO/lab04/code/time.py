@@ -21,7 +21,7 @@ output = 'h.png'
 mode = '1'
 
 
-cmd_list =['./edge_detection', './non_optimized_code','./lab01']
+cmd_list =['./edge_detection', './non_optimized_code']
 
 for img in img_array:
     print(f"Image: {img}")

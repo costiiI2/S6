@@ -155,9 +155,15 @@ Mean time: 0.02828
 Median time: 0.02592
 Standard deviation: 0.01591
 ```
-On peut voir que le code optimisé est pas toujours plus rapide que le code non optimisé etant compilé avec les flags -O3.
+On peut voir que le code optimisé est pas toujours plus rapide que le code non optimisé, ce dernier etant compilé avec les flags -O3 il utilise surment des operations SIMD pour optimiser le code.
 
 il est donc probable que le compilateur ait déjà optimisé le code non optimisé avec des operations SIMD.
+
+## **Conclusion**
+
+Dans ce laboratoire on a pu optimiser du code en utilisant des operations SIMD, on a pu voir que le compilateur peut déjà optimiser le code en utilisant des operations SIMD.
+
+Dans notre cas nous remarquons que dans certains cas le travail manuel n'apporte pas de gain de performance, mais il est toujours bon de savoir comment optimiser du code en utilisant des operations SIMD.
 ## **Environnement d'execution**
 
 Le système décrit dispose d'un processeur Intel Core i7-8550U avec 8 threads, répartis sur 4 cœurs physiques. La fréquence du processeur est de 1,80 GHz avec une fréquence mesurée de 1432,548 MHz. 
