@@ -230,10 +230,7 @@ void rgb_to_grayscale_chained(const struct img_chained_t *img, struct img_chaine
         fprintf(stderr, "Error: image is not in RGB format\n");
         return;
     }
-    else
-    {
-        printf("start conversion\n");
-    }
+    
 
     int width = img->width;
     int height = img->height;

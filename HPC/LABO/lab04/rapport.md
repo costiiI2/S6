@@ -105,12 +105,59 @@ Ici il faut se rendre compte que on peux que optimiser la code utilisant les tab
 
 Pour la partie optimisation on va utiliser les operations SIMD pour les calculs utilisant les kernels car on peut effectuer des operations sur les 4 pixels en parallèle.
 
+pour lancer le code optimisé il faut utiliser la commande suivante depuis le dossier code:
 
+```bash
+$ make
+$ ./edge_detection <image_src> <image_dst> <mode>
+```
 
-![graph](graph.png){ width=80% }
+nous avons repris le code non optimizé pour le comparer avec le code optimizé.
 
+grace à un script python on a pu comparer les temps d'execution des deux versions du code.
 
+Voici les résultats obtenus:
+```bash
+Image: ../img/nyc.png
+Time statistics------- for edge_detection-------
+Mean time: 0.08925
+Median time: 0.08718
+Standard deviation: 0.00388
+Time statistics------- for lab01-------
+Mean time: 0.09318
+Median time: 0.09230
+Standard deviation: 0.00572
+Image: ../img/half-life.png
+Time statistics------- for edge_detection-------
+Mean time: 0.28491
+Median time: 0.26933
+Standard deviation: 0.02693
+Time statistics------- for lab01-------
+Mean time: 0.26179
+Median time: 0.24894
+Standard deviation: 0.02444
+Image: ../img/medalion.png
+Time statistics------- for edge_detection-------
+Mean time: 0.08651
+Median time: 0.08757
+Standard deviation: 0.00548
+Time statistics------- for lab01-------
+Mean time: 0.07967
+Median time: 0.07651
+Standard deviation: 0.01020
+Image: ../img/sample_640_2.png
+Time statistics------- for edge_detection-------
+Mean time: 0.02528
+Median time: 0.02529
+Standard deviation: 0.00081
+Time statistics------- for lab01-------
+Mean time: 0.02828
+Median time: 0.02592
+Standard deviation: 0.01591
+```
+On peut voir que le code optimisé est pas toujours plus rapide que le code non optimisé etant compilé avec les flags -O3.
 
+il est donc probable que le compilateur ait déjà optimisé le code non optimisé avec des operations SIMD.
 ## **Environnement d'execution**
 
 Le système décrit dispose d'un processeur Intel Core i7-8550U avec 8 threads, répartis sur 4 cœurs physiques. La fréquence du processeur est de 1,80 GHz avec une fréquence mesurée de 1432,548 MHz. 

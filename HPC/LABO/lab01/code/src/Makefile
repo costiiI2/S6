@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS= -O3 -g -Wall -I../../lib/stb/ -I../include -fno-inline
+CFLAGS=  -g -Wall -I../../lib/stb/ -I../include -fno-inline
 LDFLAGS= -lm
 DEBUGFLAGS= -std=c11 -Wall -Wextra -pedantic -g -I../../lib/stb/ -I../include
 
