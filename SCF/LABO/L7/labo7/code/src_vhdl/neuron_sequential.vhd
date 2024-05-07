@@ -26,12 +26,13 @@ entity neuron is
 end neuron;
 
 architecture sequential of neuron is
-
-
-        input_s : neuron_input_t;
-        weights_s : neuron_weights_t;
-        next_input_ready : std_logic := '0';
-        data_ready : std_logic := '0';
+    
+    begin
+    /*
+    std_logic_vector input_s : neuron_input_t;
+    std_logic_vector weights_s : neuron_weights_t;
+    std_logic next_input_ready : std_logic := '0';
+    std_logic data_ready : std_logic := '0';
         
     function neuron_compute(input_s : std_logic_vector; weights_s : std_logic_vector; COMMA_POS : integer) return std_logic_vector is
         variable sum : signed(input_s'length-1 downto 0) := (others => '0');
@@ -41,10 +42,9 @@ architecture sequential of neuron is
             product := signed(input_s(i*COMMA_POS downto (i+1)*COMMA_POS-1)) * signed(weights_s(i*COMMA_POS downto (i+1)*COMMA_POS-1));
             sum := sum + product; 
         end loop;
-        return std_logic_vector(sum(input_s'length-1-COMMA_POS downto COMMA_POS));
+        return std_logic_vector(sum(DATASIZE+COMMA_POS downto COMMA_POS));
     end neuron_compute;
         
-begin
 
     save_input: process(clk_i, rst_i)
         begin
@@ -69,9 +69,7 @@ begin
                     if(valid_i = (others => '1')) then
                         data_ready <= '1';
                     end if;
-                end if;
-                
-                
+                end if;    
             end if;
         end process;
 
@@ -111,6 +109,6 @@ begin
                     ready_o <= (others => '0');
                 end if;
             end if;
-
+*/
 
 end sequential;

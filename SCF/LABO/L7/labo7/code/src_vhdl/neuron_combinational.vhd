@@ -27,24 +27,27 @@ end neuron;
 
 architecture combinational of neuron is
 
-begin   
+    begin   
 
     -- calcul combinatoire de la sortie
-    process(inputs_i, weights_i)
-        -- on aloue 2 * datasize pour le produit et la somme
+    process(all)
+        -- on aloue 2 * datasize pour la somme
         variable sum : unsigned((DATASIZE*2)-1 downto 0) := (others => '0');
-        variable product : unsigned((DATASIZE*2)-1 downto 0);
     begin
-        for i in 0 to NBINPUTS-1 loop
-            product := unsigned(inputs_i(i)) * unsigned(weights_i(i));
-            sum := sum + product;
-        end loop;
-        -- on mets la virgule au bon endroit par rapport a data size et notre calcul
-        -- la virgule se trouve a la position COMMA_POS on doit donc tronquer les bits de COMMA_POS taille a droite et a gauche
-        result_o <= sum((DATASIZE*2)-1-COMMA_POS downto COMMA_POS);
+        sum := (others => '0');
+
+        
+
+            for i in 0 to NBINPUTS-1 loop
+                sum := sum + unsigned(inputs_i(i)) * unsigned(weights_i(i));
+            end loop;
+            -- on mets la virgule au bon endroit par rapport a data size et notre calcul
+            -- la virgule se trouve a la position COMMA_POS on doit donc tronquer les bits de COMMA_POS taille a droite et a gauche
+            result_o <= std_logic_vector(sum(DATASIZE+COMMA_POS-1 downto COMMA_POS));
+      
     end process;
 
-    ready_o <= ready_i;
-    valid_o <= valid_i(0);
+    ready_o <= valid_i;
+    valid_o <= ready_i;
 
 end combinational;
