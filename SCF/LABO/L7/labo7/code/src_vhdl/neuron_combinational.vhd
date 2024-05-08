@@ -35,9 +35,6 @@ architecture combinational of neuron is
         variable sum : unsigned((DATASIZE*2)-1 downto 0) := (others => '0');
     begin
         sum := (others => '0');
-
-        
-
             for i in 0 to NBINPUTS-1 loop
                 sum := sum + unsigned(inputs_i(i)) * unsigned(weights_i(i));
             end loop;

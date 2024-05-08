@@ -65,6 +65,34 @@ Date:
 
 ## FASTFETCH
 
+## time fast fetch
+
+```bash
+real	0m0.139s
+user	0m0.092s
+sys	0m0.042s
+```     
+
+### perf stat fast fetch
+
+```bash
+Performance counter stats for 'fastfetch':
+
+            222.98 msec task-clock                       #    0.692 CPUs utilized             
+               205      context-switches                 #  919.379 /sec                      
+                 9      cpu-migrations                   #   40.363 /sec                      
+             5,884      page-faults                      #   26.388 K/sec                     
+       331,312,469      cycles                           #    1.486 GHz                       
+       330,610,812      instructions                     #    1.00  insn per cycle            
+        64,477,470      branches                         #  289.167 M/sec                     
+         2,408,101      branch-misses                    #    3.73% of all branches           
+
+       0.322417756 seconds time elapsed
+
+       0.119237000 seconds user
+       0.106214000 seconds sys
+```
+   
 
 
 ## **Environnement d'execution**

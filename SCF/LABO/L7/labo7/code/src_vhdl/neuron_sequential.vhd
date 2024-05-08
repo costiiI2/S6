@@ -26,89 +26,52 @@ entity neuron is
 end neuron;
 
 architecture sequential of neuron is
-    
-    begin
-    /*
-    std_logic_vector input_s : neuron_input_t;
-    std_logic_vector weights_s : neuron_weights_t;
-    std_logic next_input_ready : std_logic := '0';
-    std_logic data_ready : std_logic := '0';
-        
-    function neuron_compute(input_s : std_logic_vector; weights_s : std_logic_vector; COMMA_POS : integer) return std_logic_vector is
-        variable sum : signed(input_s'length-1 downto 0) := (others => '0');
-        variable product : signed((input_s'length*2)-1 downto 0);
-    begin
-        for i in 0 to input_s'length/COMMA_POS-1 loop
-            product := signed(input_s(i*COMMA_POS downto (i+1)*COMMA_POS-1)) * signed(weights_s(i*COMMA_POS downto (i+1)*COMMA_POS-1));
-            sum := sum + product; 
-        end loop;
-        return std_logic_vector(sum(DATASIZE+COMMA_POS downto COMMA_POS));
-    end neuron_compute;
-        
 
-    save_input: process(clk_i, rst_i)
+    
+begin
+
+    process(clk_i, rst_i)
+            variable result_s : unsigned((DATASIZE*2)-1 downto 0) := (others => '0');
+            variable all_ready : unsigned := 0;
+            signal i : std_logic_vector(NBINPUTS-1 downto 0) := (others => '0');
         begin
             if rst_i = '1' then
-                input_s <= (others => '0');
-                data_ready <= '0';
+
+                for i in 0 to NBINPUTS-1 loop
+                    ready_o(i) <= '0';
+                end loop;
+                valid_o <= '0';
+                result_s := (others => '0');
+                i <= (others => '0');
+                all_ready := 0;
+
             elsif rising_edge(clk_i) then
+            
+                
+                if valid_i(i) = '1' then
+                    result_s := result_s + unsigned(inputs_i(i)) * unsigned(weights_i(i));
+                    ready_o(i) <= '1'; 
+                    all_ready := all_ready + 1; 
+                else
+                    ready_o(i) <= '0';
+                end if;
+
+                i <= i + 1;
+
+                if (all_ready = NBINPUTS-1) then
+                    result_o <= std_logic_vector(result_s(DATASIZE+COMMA_POS-1 downto COMMA_POS));
+                    valid_o <= '1';
+                end if;
 
                 if(valid_o = '1' and ready_i = '1')then
                     -- les données ont été consommées on peut recommencer
-                    data_ready <= '0';
-                end if;
-
-                if(next_input_ready = '1') then
-                    for i in 0 to NBINPUTS-1 loop
-                        -- on ne sauvegarde que les données valides
-                        if valid_i(i) = '1' then
-                            input_s(i) <= inputs_i(i);
-                        end if;
-                    end loop;
-                    -- si toutes les données sont prêtes on peut commencer le calcul
-                    if(valid_i = (others => '1')) then
-                        data_ready <= '1';
-                    end if;
-                end if;    
-            end if;
-        end process;
-
-    next_input_ready :process(clk_i, rst_i)
-        begin
-            if rst_i = '1' then
-                next_input_ready <= '0';
-            elsif rising_edge(clk_i) then
-                if (ready_i = '1'and valid_o = '1') then
-                    -- les données ont été consommées on peut les effacer
-                    next_input_ready <= '1';
-                else
-                    -- on attend que les données soient consommées
-                    next_input_ready <= '0';
-                end if;
-            end if;
-        end process;
-
-    compute_neuron :process(clk_i, rst_i)
-        begin
-            if rst_i = '1' then
-                result_s <= (others => '0');
-                ready_o <= (others => '0');
-                valid_o <= '0';
-            elsif rising_edge(clk_i) then
-                if data_ready = '1' then
-                    -- on attend que tous les inputs soient valides
-                    result_o <= neuron_compute(input_i, weights_i, COMMA_POS);
-                    -- on indique que les données sont traitées
-                    ready_o <= (others => '1');
-                    -- on indique que les données sont valides
-                    valid_o <= '1';
-                else
-                    -- on indique que les données ne sont pas valides
                     valid_o <= '0';
-                    -- on indique que les données ne sont pas traitées
-                    ready_o <= (others => '0');
+                    result_s := (others => '0');
+                    i <= (others => '0');
+                    all_ready := 0;
                 end if;
-            end if;
-*/
+                
 
+            end if;
+        end process;
 end sequential;
