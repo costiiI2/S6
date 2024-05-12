@@ -6712,3 +6712,5 @@ do ../scripts/sim.do all 8 16 1 0 0
 #   } elseif {[string compare $1 "comp_vhdl"] == 0} {
 #     vhdl_compil
 #  ..."
+# End time: 16:10:15 on May 08,2024, Elapsed time: 0:04:42
+# Errors: 2, Warnings: 0
