@@ -25,14 +25,51 @@ entity neuron is
     constant DATASIZE : integer := result_o'length;
 end neuron;
 
+
 architecture pipeline of neuron is
 
+    type mult_ss_t is array (0 to NBINPUTS-1) of std_logic_vector((DATASIZE*2)-1 downto 0);
+    signal mult_ss : mult_ss_t;
     begin
+        
+        process(clk_i, rst_i)
+        variable result_s : unsigned((DATASIZE*2)-1 downto 0) := (others => '0');
+        variable j : natural range 0 to NBINPUTS := 0;
+        variable sum_ready : natural range 0 to NBINPUTS := 0;
+        begin
+            if rst_i = '1' then
+                result_s := (others => '0');
+                j := 0;
+                sum_ready := 0;
+            elsif rising_edge(clk_i) then
+                if (valid_i(j) = '1' and ready_o(j) = '1') then
+                    result_s := result_s + unsigned(mult_ss(j));
+                    if sum_ready /= NBINPUTS-1 then
+                        sum_ready := sum_ready + 1; 
+                    end if;
+                end if;
+                
+                if (sum_ready = NBINPUTS-1) then
+                    result_o <= std_logic_vector(result_s(DATASIZE + COMMA_POS-1 downto COMMA_POS));
+                    valid_o <= '1';
+                    sum_ready := 0;
+                else 
+                    valid_o <= '0';
+                end if;
+
+                if (j = NBINPUTS-1) then
+                    j := 0; 
+                    else
+                    j := j+1;
+                end if;
+
+            end if;
+        end process;
           
         process(clk_i, rst_i)
+               
                 variable result_s : unsigned((DATASIZE*2)-1 downto 0) := (others => '0');
                 variable mult_s : unsigned((DATASIZE*2)-1 downto 0) := (others => '0');
-                variable all_ready :  natural range 0 to NBINPUTS := 0;
                 variable i : natural range 0 to NBINPUTS := 0;
 
             begin
@@ -41,37 +78,23 @@ architecture pipeline of neuron is
                     for i in 0 to NBINPUTS-1 loop
                         ready_o(i) <= '0';
                     end loop;
-                    valid_o <= '0';
                     result_s := (others => '0');
                     mult_s := (others => '0');
                     i :=0;
-                    all_ready := 0;
     
                 elsif rising_edge(clk_i) then
                     if(valid_o = '1' and ready_i = '1')then
-                        valid_o <= '0';
                         result_s := (others => '0');
-                        all_ready := 0;
                     end if;
     
                     if (valid_i(i) = '1' and valid_o /= '1') then
-                        mult_s := unsigned(inputs_i(i)) * unsigned(weights_i(i));
-                        result_s := result_s + mult_s;
+                        mult_ss(i) <= std_logic_vector(unsigned(inputs_i(i)) * unsigned(weights_i(i)));
                         ready_o(i) <= '1'; 
-                        if all_ready /= NBINPUTS-1 then
-                            all_ready := all_ready + 1; 
-                        end if;
-                        
+                          
                     else
                         ready_o(i) <= '0';
                     end if;
-    
-                    if (all_ready = NBINPUTS-1) then
-                        result_o <= std_logic_vector(result_s(DATASIZE + COMMA_POS-1 downto COMMA_POS));
-                        valid_o <= '1';
-                    end if;
-    
-    
+      
                     if (i = NBINPUTS-1) then
                         i := 0; 
                         else
@@ -81,7 +104,6 @@ architecture pipeline of neuron is
                 end if;
     
             end process;
-
 /*
 # +--------------------+
 # | FINAL REPORT       |
