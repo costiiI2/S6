@@ -42,6 +42,11 @@ architecture pipeline of neuron is
                 j := 0;
                 sum_ready := 0;
             elsif rising_edge(clk_i) then
+
+                if(valid_o = '1' and ready_i = '1')then
+                    result_s := (others => '0');
+                end if;
+
                 if (valid_i(j) = '1' and ready_o(j) = '1') then
                     result_s := result_s + unsigned(mult_ss(j));
                     if sum_ready /= NBINPUTS-1 then
@@ -68,7 +73,6 @@ architecture pipeline of neuron is
           
         process(clk_i, rst_i)
                
-                variable result_s : unsigned((DATASIZE*2)-1 downto 0) := (others => '0');
                 variable mult_s : unsigned((DATASIZE*2)-1 downto 0) := (others => '0');
                 variable i : natural range 0 to NBINPUTS := 0;
 
@@ -78,19 +82,15 @@ architecture pipeline of neuron is
                     for i in 0 to NBINPUTS-1 loop
                         ready_o(i) <= '0';
                     end loop;
-                    result_s := (others => '0');
                     mult_s := (others => '0');
                     i :=0;
     
                 elsif rising_edge(clk_i) then
-                    if(valid_o = '1' and ready_i = '1')then
-                        result_s := (others => '0');
-                    end if;
+                   
     
                     if (valid_i(i) = '1' and valid_o /= '1') then
                         mult_ss(i) <= std_logic_vector(unsigned(inputs_i(i)) * unsigned(weights_i(i)));
-                        ready_o(i) <= '1'; 
-                          
+                        ready_o(i) <= '1';     
                     else
                         ready_o(i) <= '0';
                     end if;

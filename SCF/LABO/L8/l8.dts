@@ -1,0 +1,10 @@
+/dts-v1/;
+/plugin/;
+&base_fpga_region {
+    firmware-name = "DE1_SoC_IO.rbf";
+    fpga-bridges = <&fpga_bridge0>;
+    de1_io {
+        compatible = "de1_io";
+        status = "ok";
+    };
+};

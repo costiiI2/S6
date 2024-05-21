@@ -3,7 +3,7 @@
 
 \center
 
-# **Laboratoire 2: likwid**
+# **Laboratoire 5: Profiling**
 
 \hfill\break
 
@@ -63,37 +63,87 @@ Date:
 
 \pagebreak
 
-## FASTFETCH
+## HIGHWAY
 
-## time fast fetch
+
+the bench mark will be **./hw help**in the root folder of the project.
+
+## time mesure
 
 ```bash
-real	0m0.139s
-user	0m0.092s
-sys	0m0.042s
+costi@Cos:~/Desktop/highway$ time ./hw help
+
+...
+
+real	0m0.014s
+user	0m0.000s
+sys	0m0.029s
+
 ```     
 
 ### perf stat fast fetch
 
 ```bash
-Performance counter stats for 'fastfetch':
+ Performance counter stats for './hw help':
 
-            222.98 msec task-clock                       #    0.692 CPUs utilized             
-               205      context-switches                 #  919.379 /sec                      
-                 9      cpu-migrations                   #   40.363 /sec                      
-             5,884      page-faults                      #   26.388 K/sec                     
-       331,312,469      cycles                           #    1.486 GHz                       
-       330,610,812      instructions                     #    1.00  insn per cycle            
-        64,477,470      branches                         #  289.167 M/sec                     
-         2,408,101      branch-misses                    #    3.73% of all branches           
+             10.97 msec task-clock                       #    2.418 CPUs utilized             
+                45      context-switches                 #    4.103 K/sec                     
+                11      cpu-migrations                   #    1.003 K/sec                     
+               418      page-faults                      #   38.109 K/sec                     
+        26,614,572      cycles                           #    2.426 GHz                       
+        15,505,893      instructions                     #    0.58  insn per cycle            
+         3,283,758      branches                         #  299.377 M/sec                     
+            78,552      branch-misses                    #    2.39% of all branches           
 
-       0.322417756 seconds time elapsed
+       0.004536999 seconds time elapsed
 
-       0.119237000 seconds user
-       0.106214000 seconds sys
+       0.004070000 seconds user
+       0.006783000 seconds sys
 ```
-   
 
+Ici on peut voir le nombre d'instruction par cycle, il n'est pas très bon, mais il pourrait être possible de l'améliorer.
+
+## perf record
+
+```bash
+$ perf record -g ./hw help
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.007 MB perf.data (2 samples) ]
+
+$ perf report
+```
+
+Grâce à perf record et perf report on peut voir les fonctions qui sont les plus utilisées et les fonctions qui sont les plus appelées.
+
+Mais nous remarquons bien que la fonction **search_buffer** est la fonction qui est la plus appelée.
+   
+## hotspot
+
+En utilisant hotspot on peut voir ou le programme passe le plus de temps.
+
+Dans le fichier search.c on a la fonction **search_buffer** qui est appeler le plus souvent.
+
+Cette fonction est applée dans le thread **search_thread** qui est un des deux threads qui sont crées., le deuxième thread sert a l'affichage des résultats.
+
+Cette partie du thread l.169 **worker.c** appelle la fonction search qui cherche un pattern dans un buffer, pour ce faire une fois le buffer chargé, on appelle la fonction **search_buffer** qui est la fonction la plus appelée, qui fait la recherche du pattern dans le buffer.
+
+Apres analyse cette fonction est deja très bien optimiser même les sous appelle de fonction le sont, mais il serait possible de mieux paralléliser le code en plusieurs threads.
+
+Il serait aussi possible de changer l'algorithme de recherche pour un algorithme plus rapide tel que **Boyer-Moore** ou **Knuth-Morris-Pratt**.
+
+On pourrait aussi créer une fonction **memchr()** qui pourrait être optimisée pour notre cas spécifique.
+
+Ces optimisations reste très compliquées et demandent beaucoup de temps et de ressources.
+
+ce programme est déjà très bien optimisé.
+
+## conclusion
+
+Le programme est déjà très bien optimisé, il est difficile de trouver des optimisations qui pourraient être faites.
+
+Mais nous avons appris à utiliser des outils de profiling qui nous permettent de voir ou le programme passe le plus de temps et de voir les fonctions qui sont les plus appelées.
+
+Ceci pourrait permettre par la suite d'optimiser certaines parties du code, qui ne sont pas evidentes à première vue.
 
 ## **Environnement d'execution**
 
