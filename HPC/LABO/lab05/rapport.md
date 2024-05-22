@@ -47,7 +47,7 @@ Assistant:
 
 Date:
 
-- **28/02/2024**
+- **15/05/2024**
 
 \pagebreak
 
@@ -65,23 +65,33 @@ Date:
 
 ## HIGHWAY
 
+Ce projet est un projet de recherche de pattern dans un fichier comme les outils `pt` et `ag`.
 
-the bench mark will be **./hw help**in the root folder of the project.
+La commande de benchmark utilisée tout le long du labo sera :
+
+```bash
+./hw help
+```
+Cette commande sera exécutée depuis le dossier racine du projet.
 
 ## time mesure
-
 ```bash
 costi@Cos:~/Desktop/highway$ time ./hw help
 
 ...
 
 real	0m0.014s
-user	0m0.000s
-sys	0m0.029s
-
+user	0m0.009s
+sys	0m0.018s
 ```     
 
+Voici les résultats de la commande `time` pour la commande `./hw help`.
+
+On peut voir pas grand chose, nous allons procéder à une analyse plus poussée.
+
 ### perf stat fast fetch
+
+Nous allons utiliser `perf stat` pour voir les statistiques de performance de la commande `./hw help`.
 
 ```bash
  Performance counter stats for './hw help':
@@ -101,7 +111,13 @@ sys	0m0.029s
        0.006783000 seconds sys
 ```
 
-Ici on peut voir le nombre d'instruction par cycle, il n'est pas très bon, mais il pourrait être possible de l'améliorer.
+Ici on voit que le programme utilise 2.418 CPUs, ce qui est un bon signe, cela signifie que le programme est bien parallélisé.
+
+Il effectue peu de context-switches et de cpu-migrations, ce qui est aussi un bon signe.
+
+Les fautes de pages sont assez élevées, mais cela est normal pour un programme qui lit beaucoup de fichiers car il doit charger les pages en mémoire.
+
+Les instructions par cycle sont de 0.58, ce qui n'est pas très bon, ceci pourrait être une piste d'optimisation.
 
 ## perf record
 
@@ -115,7 +131,7 @@ $ perf report
 
 Grâce à perf record et perf report on peut voir les fonctions qui sont les plus utilisées et les fonctions qui sont les plus appelées.
 
-Mais nous remarquons bien que la fonction **search_buffer** est la fonction qui est la plus appelée.
+Nous remarquons que la fonction **search_buffer** est la fonction qui est la plus appelée.
    
 ## hotspot
 
