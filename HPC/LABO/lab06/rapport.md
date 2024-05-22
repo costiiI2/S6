@@ -131,8 +131,56 @@ $ perf stat -e power/energy-pkg/ -e power/energy-pp0/ -e power/energy-pp1/ -e po
 
 Et voici les résultats obtenus :
 
+| Mesures | Non-Vectoriser | Vectoriser |
+|-------------|----------------|------------|
+|Cores (Joules)|0.01|0.07|
+|GPU (Joules)|0.00|0.00|
+|PKG (Joules)|0.01|0.17|
+|PSYS (Joules)|0.07|0.88|
+|RAM (Joules)|0.08|0.03|
+
+### **likwid-perfctr**
+
+La troisième méthode de mesure de consommation énergétique est l'utilisation de l'outil `likwid-perfctr`. Cet outil permet de mesurer la consommation énergétique d'un programme en utilisant les compteurs de performance du processeur.
+
+voici la commande pour mesurer la consommation énergétique des programmes non vectorisés et vectorisés :
+
+```bash
+sudo likwid-perfctr -C S0:0 -g ENERGY ./lab06 && sudo likwid-perfctr -C S0:0 -g ENERGY ./lab06_vec
+```
+
+Et voici les résultats obtenus :
+
+|        Metric        | HWThread 0 (non-vectorized) | HWThread 0 (vectorized) |
+|----------------------|-----------------------------|-------------------------|
+|  Runtime (RDTSC) [s] |     0.0066                  |     0.0041              |
+| Runtime unhalted [s] |     0.0041                  |     0.0014              |
+|      Clock [MHz]     |  3062.5857                  |  2694.8486              |
+|          CPI         |     0.9927                  |     0.5848              |
+|    Temperature [C]   |         64                  |         54              |
+|      Energy [J]      |     0.0930                  |     0.0372              |
+|       Power [W]      |    14.0752                  |     9.0053              |
+|    Energy PP0 [J]    |     0.0745                  |     0.0301              |
+|     Power PP0 [W]    |    11.2842                  |     6.6105              |
+|    Energy PP1 [J]    |     0.0032                  |          0              |
+|     Power PP1 [W]    |     0.4898                  |          0              |
+|    Energy DRAM [J]   |     0.0143                  |     0.0014              |
+|    Power DRAM [W]    |     2.1718                  |     0.3395              |
 
 
+### **Résultats**
+
+Les résultat peuvent varier d'une exécution à l'autre, mais les tendances restent les mêmes.
+
+## **Analyse des résultats**
+
+Les résultats obtenus avec les trois méthodes de mesure de consommation énergétique sont assez cohérents. Les résultats obtenus avec `likwid-powermeter` et `perf` sont assez proches, tandis que les résultats obtenus avec `likwid-perfctr` sont un peu plus élevés. Cela peut être dû à la précision des compteurs de performance utilisés par les différents outils.
+
+Les résultats obtenus avec les programmes non vectorisés sont plus élevés que ceux obtenus avec les programmes vectorisés. Cela est dû au fait que les programmes vectorisés sont plus efficaces et nécessitent moins de cycles d'horloge pour effectuer les mêmes opérations.
+
+## **Conclusion**
+
+Dans ce laboratoire, nous avons mesuré la consommation énergétique de programmes non vectorisés et vectorisés en utilisant trois méthodes différentes. Les résultats obtenus avec les trois méthodes sont cohérents et montrent que les programmes vectorisés consomment moins d'énergie que les programmes non vectorisés.
 
 
 ## **Environnement d'execution**

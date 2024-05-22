@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <likwid-marker.h>
+
 
 #define SIZE 1000000
 
@@ -21,8 +23,14 @@ int main() {
         array[i] = 1.0f;
     }
 
+
+
+    LIKWID_MARKER_INIT;
     // Calculer la somme des valeurs du tableau
+    LIKWID_MARKER_START("sum");
     float sum = sum_non_vectorized(array, SIZE);
+    LIKWID_MARKER_STOP("sum");
+    LIKWID_MARKER_CLOSE;
     printf("Somme non vectorisée : %f\n", sum);
 
     // Libérer la mémoire allouée
