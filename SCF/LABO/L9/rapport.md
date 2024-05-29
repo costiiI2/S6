@@ -64,24 +64,23 @@ Date:
 
 ## **Introduction**
 
-Ce laboratoire va nous permettre de developper de A à Z un système complet pour calculer une convolution sur FPGA.
+Ce laboratoire va nous permettre de développer de A à Z un système complet pour calculer une convolution sur FPGA.
 
 
 -- Address map
-    -- Offset (idx) | Data                    | RW
-    -- -------------|-------------------------|-----
+    -- Offset (idx) | Data                        | RW
+    -- -------------|-----------------------------|-----
     -- 0x00	    (0) | Constant (0xBADB100D)   | R
-    -- --kernel registers-----------------------
+    -- --kernel registers-------------------------------
     -- 0x04	    (1) | kernel[0-3]             | R/W
     -- 0x08	    (2) | kernel[4-7]             | R/W
     -- 0x0C	    (3) | kernel[8],-,-,-         | R/W
-
+    -- --image registers--------------------------------
     -- 0x10	    (4) | set img[0-3]      	  | W
-    -- 0x14	    (5) | set img[4-7]      	  | W
-    -- 0x18	    (6) | set img[8],-,-,-        | W
-    -- 0x1C         (7) | return value            | R
 
-    -- 0x20     (8) | Can write (1) / Can read (0) | R
+    -- 0x1C         (7) | return value            | R
+    -- --control registers------------------------------
+    -- 0x20     (8) | Can read  / Can write  | R
 
 vhdl :
 
@@ -111,16 +110,17 @@ set_kernel(kernel){
 
 set_img(img){
         write(0x10) = img[0-3]
-        ...0x14 = img[4-7]
-        ...0x18 = img[8]
+        ...0x10 = img[4-7]
+        ...0x10 = img[8]
 }
 
 while(i < taille img_res){
         if(can_write){
-                set_img(img[j++])
+                set_img(img[j++])//4 premier pixel
+                
         }
         if(can_read){
-                img_result[i++] = read(0x1C);
+                img_result[i++] = read(0x1C) + read(0x1C) + read(0x1C) + read(0x1C);
         }
 }
 

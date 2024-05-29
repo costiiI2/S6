@@ -1,0 +1,338 @@
+startup	time=1716971996323506499
+runtime	time=40856104
+startup	time=1716972536012951544
+runtime	time=30515854
+startup	time=1716972536740021870
+runtime	time=10359137
+startup	time=1716972537029968145
+runtime	time=10346832
+startup	time=1716972537309319623
+runtime	time=20141255
+startup	time=1716972537505504568
+runtime	time=10117548
+startup	time=1716972537685665597
+runtime	time=10122362
+startup	time=1716972537853966129
+runtime	time=10119054
+startup	time=1716972538015692835
+runtime	time=10134587
+startup	time=1716972538146086645
+runtime	time=10565434
+startup	time=1716972538285185580
+runtime	time=10530620
+startup	time=1716972538435894149
+runtime	time=20883565
+startup	time=1716972538583440070
+runtime	time=10249497
+startup	time=1716972538701698182
+runtime	time=10541045
+startup	time=1716973444951907321
+runtime	time=41147633
+startup	time=1716973445805848111
+runtime	time=10122362
+startup	time=1716973446129446865
+runtime	time=31043661
+startup	time=1716973446355831544
+runtime	time=10382119
+startup	time=1716973553246578259
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:19	speedup=0.70	duration=500416818	selected-samples=0
+throughput-point	name=main.c:48	delta=0
+runtime	time=541408396
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:19	count=1
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:32	count=1
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:55	count=1
+startup	time=1716973662109816526
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:55	speedup=0.60	duration=495364788	selected-samples=8
+throughput-point	name=main.c:48	delta=0
+runtime	time=561760067
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:32	count=2
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:55	count=9
+startup	time=1716973808854182583
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:50	speedup=0.00	duration=500097895	selected-samples=2
+throughput-point	name=main.c:51	delta=383
+throughput-point	name=main.c:49	delta=383
+throughput-point	name=main.c:43	delta=0
+latency-point	name=search_sequence	arrivals=383	departures=383	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:50	speedup=0.30	duration=999793989	selected-samples=1
+throughput-point	name=main.c:51	delta=761
+throughput-point	name=main.c:49	delta=761
+throughput-point	name=main.c:43	delta=0
+latency-point	name=search_sequence	arrivals=761	departures=761	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:49	speedup=0.15	duration=1999347748	selected-samples=5
+throughput-point	name=main.c:51	delta=1491
+throughput-point	name=main.c:49	delta=1491
+throughput-point	name=main.c:43	delta=0
+latency-point	name=search_sequence	arrivals=1491	departures=1491	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:50	speedup=0.00	duration=4000149403	selected-samples=19
+throughput-point	name=main.c:51	delta=3047
+throughput-point	name=main.c:49	delta=3048
+throughput-point	name=main.c:43	delta=0
+latency-point	name=search_sequence	arrivals=3047	departures=3047	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:48	speedup=0.00	duration=8000115923	selected-samples=16
+throughput-point	name=main.c:51	delta=4214
+throughput-point	name=main.c:49	delta=4214
+throughput-point	name=main.c:43	delta=0
+latency-point	name=search_sequence	arrivals=4214	departures=4214	difference=8246986803801682540
+runtime	time=15682310829
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:9	count=1
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:14	count=1
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:19	count=5
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:20	count=12
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:22	count=2
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:28	count=13
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:35	count=1
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:48	count=35
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:49	count=11
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:50	count=48
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:51	count=3
+startup	time=1716973968521693855
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:50	speedup=0.00	duration=500146972	selected-samples=5
+throughput-point	name=main.c:51	delta=372
+throughput-point	name=main.c:49	delta=372
+throughput-point	name=main.c:43	delta=0
+latency-point	name=search_sequence	arrivals=372	departures=372	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:50	speedup=0.00	duration=1000157243	selected-samples=10
+throughput-point	name=main.c:51	delta=742
+throughput-point	name=main.c:49	delta=742
+throughput-point	name=main.c:43	delta=0
+latency-point	name=search_sequence	arrivals=742	departures=742	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:50	speedup=0.00	duration=2000077560	selected-samples=18
+throughput-point	name=main.c:51	delta=1525
+throughput-point	name=main.c:49	delta=1525
+throughput-point	name=main.c:43	delta=0
+latency-point	name=search_sequence	arrivals=1525	departures=1525	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:48	speedup=0.00	duration=4000351572	selected-samples=9
+throughput-point	name=main.c:51	delta=2870
+throughput-point	name=main.c:49	delta=2870
+throughput-point	name=main.c:43	delta=0
+latency-point	name=search_sequence	arrivals=2870	departures=2870	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:19	speedup=0.90	duration=7989318831	selected-samples=12
+throughput-point	name=main.c:51	delta=4092
+throughput-point	name=main.c:49	delta=4092
+throughput-point	name=main.c:43	delta=0
+latency-point	name=search_sequence	arrivals=4092	departures=4092	difference=8246986803801682540
+runtime	time=16053202870
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:19	count=20
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:20	count=11
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:22	count=2
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:28	count=10
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:48	count=34
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:49	count=5
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:50	count=74
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:53	count=2
+startup	time=1716974069367740019
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:45	speedup=0.45	duration=493868010	selected-samples=2
+throughput-point	name=main.c:78	delta=424
+throughput-point	name=main.c:76	delta=424
+throughput-point	name=main.c:70	delta=0
+latency-point	name=search_sequence	arrivals=424	departures=424	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:44	speedup=0.00	duration=1000060169	selected-samples=0
+throughput-point	name=main.c:78	delta=866
+throughput-point	name=main.c:76	delta=866
+throughput-point	name=main.c:70	delta=0
+latency-point	name=search_sequence	arrivals=866	departures=866	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:45	speedup=0.70	duration=1974741980	selected-samples=4
+throughput-point	name=main.c:78	delta=1670
+throughput-point	name=main.c:76	delta=1671
+throughput-point	name=main.c:70	delta=0
+latency-point	name=search_sequence	arrivals=1670	departures=1670	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:39	speedup=0.25	duration=3912054697	selected-samples=7
+throughput-point	name=main.c:78	delta=3158
+throughput-point	name=main.c:76	delta=3158
+throughput-point	name=main.c:70	delta=0
+latency-point	name=search_sequence	arrivals=3158	departures=3158	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:37	speedup=0.05	duration=7916725641	selected-samples=9
+throughput-point	name=main.c:78	delta=3638
+throughput-point	name=main.c:76	delta=3638
+throughput-point	name=main.c:70	delta=0
+latency-point	name=search_sequence	arrivals=3638	departures=3638	difference=8246986803801682540
+runtime	time=15813284505
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:37	count=15
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:38	count=1
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:39	count=18
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:40	count=3
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:43	count=5
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:44	count=9
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:45	count=25
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:46	count=2
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:48	count=1
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:52	count=1
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:77	count=3
+startup	time=1716974210656447405
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:45	speedup=0.00	duration=500060243	selected-samples=0
+throughput-point	name=main.c:78	delta=416
+throughput-point	name=main.c:76	delta=416
+throughput-point	name=main.c:70	delta=0
+latency-point	name=search_sequence	arrivals=416	departures=416	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:39	speedup=0.75	duration=988619899	selected-samples=1
+throughput-point	name=main.c:78	delta=826
+throughput-point	name=main.c:76	delta=826
+throughput-point	name=main.c:70	delta=0
+latency-point	name=search_sequence	arrivals=826	departures=826	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:44	speedup=0.60	duration=1973793192	selected-samples=1
+throughput-point	name=main.c:78	delta=1665
+throughput-point	name=main.c:76	delta=1665
+throughput-point	name=main.c:70	delta=0
+latency-point	name=search_sequence	arrivals=1665	departures=1665	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:45	speedup=0.35	duration=3917283375	selected-samples=10
+throughput-point	name=main.c:78	delta=3112
+throughput-point	name=main.c:76	delta=3112
+throughput-point	name=main.c:70	delta=0
+latency-point	name=search_sequence	arrivals=3112	departures=3112	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:45	speedup=0.65	duration=7894858660	selected-samples=5
+throughput-point	name=main.c:78	delta=3185
+throughput-point	name=main.c:76	delta=3185
+throughput-point	name=main.c:70	delta=0
+latency-point	name=search_sequence	arrivals=3185	departures=3185	difference=8246986803801682540
+runtime	time=16470910062
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:37	count=2
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:39	count=16
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:40	count=6
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:43	count=1
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:44	count=6
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:45	count=25
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:46	count=1
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:48	count=1
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:77	count=1
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:86	count=1
+startup	time=1716974323773158220
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:39	speedup=0.05	duration=477765312	selected-samples=326
+throughput-point	name=main.c:78	delta=193
+throughput-point	name=main.c:76	delta=193
+throughput-point	name=main.c:70	delta=0
+latency-point	name=search_sequence	arrivals=193	departures=193	difference=8246986803801682541
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:45	speedup=0.95	duration=806123801	selected-samples=813
+throughput-point	name=main.c:78	delta=310
+throughput-point	name=main.c:76	delta=311
+throughput-point	name=main.c:70	delta=0
+latency-point	name=search_sequence	arrivals=311	departures=310	difference=8246986803801682541
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:44	speedup=0.55	duration=1813278621	selected-samples=889
+throughput-point	name=main.c:78	delta=747
+throughput-point	name=main.c:76	delta=747
+throughput-point	name=main.c:70	delta=0
+latency-point	name=search_sequence	arrivals=747	departures=747	difference=8246986803801682541
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:43	speedup=0.60	duration=3687117005	selected-samples=405
+throughput-point	name=main.c:78	delta=1310
+throughput-point	name=main.c:76	delta=1310
+throughput-point	name=main.c:70	delta=0
+latency-point	name=search_sequence	arrivals=1310	departures=1310	difference=8246986803801682540
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:45	speedup=0.55	duration=6887009948	selected-samples=8223
+throughput-point	name=main.c:78	delta=2789
+throughput-point	name=main.c:76	delta=2789
+throughput-point	name=main.c:70	delta=0
+latency-point	name=search_sequence	arrivals=2789	departures=2789	difference=8246986803801682541
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:43	speedup=0.00	duration=15724100104	selected-samples=1548
+throughput-point	name=main.c:78	delta=4632
+throughput-point	name=main.c:76	delta=4631
+throughput-point	name=main.c:70	delta=0
+latency-point	name=search_sequence	arrivals=4631	departures=4632	difference=8246986803801682540
+runtime	time=31594157565
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:37	count=7
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:39	count=18594
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:40	count=3345
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:43	count=3120
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:44	count=10571
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:45	count=27460
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:46	count=2939
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:48	count=2019
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:52	count=1242
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:75	count=2
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:76	count=1
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:77	count=3
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:80	count=1
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:86	count=1
+startup	time=1716974430899742224
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:28	speedup=0.35	duration=495492585	selected-samples=13
+throughput-point	name=main.c:106	delta=28
+throughput-point	name=main.c:100	delta=0
+latency-point	name=search_sequence	arrivals=28	departures=28	difference=8246986803801682541
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:107	speedup=0.50	duration=941111730	selected-samples=118
+throughput-point	name=main.c:108	delta=57
+throughput-point	name=main.c:106	delta=57
+throughput-point	name=main.c:100	delta=0
+latency-point	name=search_sequence	arrivals=57	departures=57	difference=8246986803801682541
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:107	speedup=0.35	duration=1923060216	selected-samples=220
+throughput-point	name=main.c:108	delta=108
+throughput-point	name=main.c:106	delta=108
+throughput-point	name=main.c:100	delta=0
+latency-point	name=search_sequence	arrivals=108	departures=108	difference=8246986803801682541
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:107	speedup=0.35	duration=3855578538	selected-samples=413
+throughput-point	name=main.c:108	delta=226
+throughput-point	name=main.c:106	delta=226
+throughput-point	name=main.c:100	delta=0
+latency-point	name=search_sequence	arrivals=226	departures=226	difference=8246986803801682541
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:107	speedup=0.00	duration=8000064071	selected-samples=955
+throughput-point	name=main.c:108	delta=474
+throughput-point	name=main.c:106	delta=474
+throughput-point	name=main.c:100	delta=0
+latency-point	name=search_sequence	arrivals=474	departures=474	difference=8246986803801682541
+startup	time=1716974472238837974
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:19	speedup=0.40	duration=500067953	selected-samples=1
+throughput-point	name=main.c:105	delta=0
+throughput-point	name=main.c:100	delta=0
+latency-point	name=search_sequence	arrivals=0	departures=1	difference=8246986803801682540
+runtime	time=541616709
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:19	count=2
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:28	count=3
+startup	time=1716974666047372737
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:19	speedup=0.60	duration=492914825	selected-samples=12
+throughput-point	name=main.c:105	delta=0
+throughput-point	name=main.c:100	delta=0
+latency-point	name=search_sequence	arrivals=0	departures=0	difference=8246986803801682541
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:19	speedup=0.70	duration=977699987	selected-samples=32
+throughput-point	name=main.c:105	delta=0
+throughput-point	name=main.c:100	delta=0
+latency-point	name=search_sequence	arrivals=0	departures=0	difference=8246986803801682541
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:28	speedup=0.70	duration=1995981753	selected-samples=6
+throughput-point	name=main.c:105	delta=0
+throughput-point	name=main.c:100	delta=0
+latency-point	name=search_sequence	arrivals=0	departures=1	difference=8246986803801682540
+runtime	time=3640566390
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:19	count=50
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:20	count=25
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:22	count=5
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:28	count=56
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:106	count=53
+startup	time=1716974722995283400
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:69	speedup=0.00	duration=500404172	selected-samples=176
+throughput-point	name=main.c:105	delta=0
+throughput-point	name=main.c:100	delta=0
+latency-point	name=search_sequence	arrivals=0	departures=1	difference=8246986803801682540
+runtime	time=571546050
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:69	count=179
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:70	count=41
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:73	count=36
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:74	count=124
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:75	count=260
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:76	count=45
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:78	count=19
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:82	count=13
+startup	time=1716975091216794796
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:106	speedup=0.45	duration=475359332	selected-samples=55
+throughput-point	name=main.c:105	delta=0
+throughput-point	name=main.c:100	delta=0
+latency-point	name=search_sequence	arrivals=0	departures=0	difference=8246986803801682541
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:106	speedup=0.75	duration=927329960	selected-samples=97
+throughput-point	name=main.c:105	delta=0
+throughput-point	name=main.c:100	delta=0
+latency-point	name=search_sequence	arrivals=0	departures=0	difference=8246986803801682541
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:106	speedup=0.95	duration=1986302324	selected-samples=15
+throughput-point	name=main.c:105	delta=0
+throughput-point	name=main.c:100	delta=0
+latency-point	name=search_sequence	arrivals=0	departures=1	difference=8246986803801682540
+runtime	time=3592766142
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:106	count=173
+startup	time=1716975388534202595
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:80	speedup=0.20	duration=492071676	selected-samples=202
+throughput-point	name=main.c:124	delta=0
+throughput-point	name=main.c:119	delta=0
+latency-point	name=search_sequence	arrivals=0	departures=1	difference=8246986803801682540
+runtime	time=571489026
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:80	count=204
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:82	count=26
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:85	count=33
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:86	count=118
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:88	count=251
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:90	count=47
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:94	count=15
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:98	count=16

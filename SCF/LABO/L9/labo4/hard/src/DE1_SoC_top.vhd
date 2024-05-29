@@ -235,11 +235,6 @@ architecture top of DE1_SoC_top is
             -- LED
             hps_io_0_hps_io_gpio_inst_GPIO53  : inout std_logic                     := 'X' ;             -- hps_io_gpio_inst_GPIO53
 				
-			axi_slave_input_reg_a_i          : in    std_logic_vector(31 downto 0) := (others => 'X'); -- input_reg_a_i
-			axi_slave_input_reg_b_i          : in    std_logic_vector(31 downto 0) := (others => 'X'); -- input_reg_b_i
-			axi_slave_output_reg_a_o         : out   std_logic_vector(31 downto 0);                    -- output_reg_a_o
-			axi_slave_output_reg_c_o         : out   std_logic_vector(31 downto 0);                    -- output_reg_c_o
-			axi_slave_output_reg_b_o         : out   std_logic_vector(31 downto 0);                    -- output_reg_b_o
 				-- Clock
 				clk_clk                             : in    std_logic                     := 'X'      -- clk
 			

@@ -21,6 +21,9 @@ library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
 
+LIBRARY altera_mf;
+    USE altera_mf_altera_mf_components.all;
+
 entity axi4lite_slave is
     generic (
         -- Users to add parameters here
@@ -55,13 +58,14 @@ entity axi4lite_slave is
         axi_rresp_o     : out std_logic_vector(1 downto 0);
         axi_rvalid_o    : out std_logic;
         axi_rready_i    : in  std_logic;
-        -- User input-output
-        input_reg_A_i  : in  std_logic_vector(31 downto 0);
-        input_reg_B_i  : in  std_logic_vector(31 downto 0);
+        -- FIFO
+        data     : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+        rdreq    : IN STD_LOGIC;
+        wrreq    : IN STD_LOGIC;
+        empty    : OUT STD_LOGIC;
+        full     : OUT STD_LOGIC;
+        q        : OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
 
-        output_reg_A_o  : out std_logic_vector(31 downto 0);
-        output_reg_B_o  : out std_logic_vector(31 downto 0);
-        output_reg_C_o  : out std_logic_vector(31 downto 0)
     );
 end entity axi4lite_slave;
 
@@ -97,26 +101,74 @@ architecture rtl of axi4lite_slave is
     signal axi_read_done_s     : std_logic;
     signal axi_rdata_s         : std_logic_vector(AXI_DATA_WIDTH-1 downto 0);
 
-    --user declarations
-    constant CST_ADDR_0_FOR_TST  : std_logic_vector(31 downto 0) := x"BADB100D";
-    signal internal_reg_s      : std_logic_vector(31 downto 0);
-    signal input_reg_A_s  : std_logic_vector(31 downto 0);
-    signal input_reg_B_s  : std_logic_vector(31 downto 0);
-    signal output_reg_A_s  : std_logic_vector(31 downto 0);
-    signal output_reg_B_s  : std_logic_vector(31 downto 0);
-    signal output_reg_C_s  : std_logic_vector(31 downto 0);
-
-    ---------------------------------------------------------------------
-    signal input_reg_A_old_s  : std_logic_vector(31 downto 0);
-    signal edge_capture_s     : std_logic_vector(31 downto 0);
-    signal reg_A_rising_edge_s : std_logic_vector(31 downto 0);
-    ---------------------------------------------------------------------
     signal dummy_cnt : unsigned(15 downto 0);
 
     signal byte_index   : integer;
 
     --debug signal
     signal local_addr_s :std_logic_vector(AXI_ADDR_WIDTH-1-ADDR_LSB downto 0);
+
+    --user declarations
+    constant CST_ADDR_0_FOR_TST  : std_logic_vector(31 downto 0) := x"BADB100D";
+    -- signal for the kernel
+    signal kern_reg_0_3_s  : std_logic_vector(31 downto 0);
+    signal kern_reg_4_7_s  : std_logic_vector(31 downto 0);
+    signal kern_reg_8_s    : std_logic_vector(31 downto 0);
+
+
+    -- FIFO's
+    COMPONENT fifo
+        PORT (
+            clock    : IN STD_LOGIC;
+            data     : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+            rdreq    : IN STD_LOGIC;
+            wrreq    : IN STD_LOGIC;
+            empty    : OUT STD_LOGIC;
+            full     : OUT STD_LOGIC;
+            q        : OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
+        );
+    END COMPONENT;
+    
+
+    signal img_fifo_data_in    : std_logic_vector(31 downto 0);
+    signal img_fifo_write_en   : std_logic;
+    signal img_fifo_read_en    : std_logic;
+    signal img_fifo_data_out   : std_logic_vector(31 downto 0);
+    signal img_fifo_full       : std_logic;
+    signal img_fifo_empty      : std_logic;
+    
+    signal process_fifo_data_in    : std_logic_vector(31 downto 0);
+    signal process_fifo_write_en   : std_logic;
+    signal process_fifo_read_en    : std_logic;
+    signal process_fifo_data_out   : std_logic_vector(31 downto 0);
+    signal process_fifo_full       : std_logic;
+    signal process_fifo_empty      : std_logic;
+    
+    
+    -- FIFO for the image
+
+    img_fifo : fifo
+        port map (
+            clock    => clk_i,
+            data     => img_fifo_data_in,
+            rdreq    => img_fifo_read_en,
+            wrreq    => img_fifo_write_en,
+            empty    => img_fifo_empty,
+            full     => img_fifo_full,
+            q        => img_fifo_data_out
+        );
+
+    -- FIFO for the image convolution result
+    process_fifo : fifo
+        port map (
+            clock    => clk_i,
+            data     => process_fifo_data_in,
+            rdreq    => process_fifo_read_en,
+            wrreq    => process_fifo_write_en,
+            empty    => process_fifo_empty,
+            full     => process_fifo_full,
+            q        => process_fifo_data_out
+        );
 
 begin
 
@@ -188,33 +240,20 @@ begin
     -- and the slave is ready to accept the write address and write data.
     axi_data_wren_s <= axi_wready_s and axi_wvalid_i ; --and axi_awready_s and axi_awvalid_i ;
 
-    -- Address map
-    -- Offset (idx) | Data                    | RW
-    -- -------------|-------------------------|-----
+        -- Offset (idx) | Data                        | RW
+    -- -------------|-----------------------------|-----
     -- 0x00	    (0) | Constant (0xBADB100D)   | R
-    -- 0x04	    (1) | Test Register           | RW
-    -- 0x08	    (2) | Input Register 1        | R
-    -- 0x0C	    (3) | Edge Capture Register   | RW (TODO)
-    -- 0x10	    (4) | Input Register 2	      | R
-    -- 0x14	    (5) | Output Register 1       | RW
-    -- 0x18	    (6) | Set Register            | W
-    -- 0x1C     (7) | Clear Register          | W  (TODO)
-    -- 0x20     (8) | Output Register 2       | RW (TODO)
-    -- 0x24     (9) | Output Register 3       | RW 
-
-    ---------------------------------------------------------------------
-
-    delay_for_edge: process(clk_i, reset_s)
-    begin
-        if reset_s = '1' then
-            input_reg_A_old_s <= (others => '0');
-            elsif rising_edge(clk_i) then
-            input_reg_A_old_s <= input_reg_A_s;
-            reg_A_rising_edge_s <= input_reg_A_s and not input_reg_A_old_s;
-
-            ---------------------------------------------------------------------
-        end if;
-    end process;
+    -- --kernel registers-------------------------------
+    -- 0x04	    (1) | kernel[0-3]             | R/W
+    -- 0x08	    (2) | kernel[4-7]             | R/W
+    -- 0x0C	    (3) | kernel[8],-,-,-         | R/W
+    -- --image registers--------------------------------
+    -- 0x10	    (4) | set img[0-3]      	  | W
+    -- 0x14	    (5) | set img[4-7]      	  | W
+    -- 0x18	    (6) | set img[8],-,-,-        | W
+    -- 0x1C     (7) | return value            | R
+    -- --control registers------------------------------
+    -- 0x20     (8) | Can write (1) / Can read (0) | R
   
     ---------------------------------------------------------------------
     process (reset_s, clk_i)
@@ -222,100 +261,59 @@ begin
         variable int_waddr_v : natural;
     begin
         if reset_s = '1' then
-            internal_reg_s <= (others => '0');
-            output_reg_B_s   <= (others => '0');
-            output_reg_A_s   <= (others => '0');
-            output_reg_C_s <= (others => '0');
+            head <= 0;
+            kern_reg_0_3_s <= (others => '0');
+            kern_reg_4_7_s <= (others => '0');
+            kern_reg_8_s   <= (others => '0');
             axi_write_done_s <= '1';
+            process_fifo_data_in <= (others => '0');
+            img_fifo_data_in <= (others => '0');
+            img_fifo_write_en <= '0';
+
         elsif rising_edge(clk_i) then
             axi_write_done_s <= '0';
-
-            edge_capture_s <= edge_capture_s or reg_A_rising_edge_s;
+            img_fifo_write_en <= '0';
 
             ---------------------------------------------------------------------
             if axi_data_wren_s = '1' then
                 axi_write_done_s <= '1';
                 int_waddr_v   := to_integer(unsigned(axi_waddr_mem_s));
                 case int_waddr_v is
-                    when 1   => for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
-                                    if ( axi_wstrb_i(byte_index) = '1' ) then
-                                        -- Respective byte enables are asserted as per write strobe slave register 1
-                                        internal_reg_s(byte_index*8+7 downto byte_index*8) <= axi_wdata_i(byte_index*8+7 downto byte_index*8);
-                                    end if;
-                                end loop;
-                    ----------------------- EDGE CAP -----------------------------
-                    when 3  => -- edge capture read input reg A and control with previous state of input reg A
-                                for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
-                                    if ( axi_wstrb_i(byte_index) = '1' ) then
-                                        edge_capture_s(byte_index*8+7 downto byte_index*8) <= 
-                                            edge_capture_s(byte_index*8+7 downto byte_index*8) and not axi_wdata_i(byte_index*8+7 downto byte_index*8);
-                                    end if;
-                                end loop;
-                    ---------------------------------------------------------------------
-                    when 5 => for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
-                                  if ( axi_wstrb_i(byte_index) = '1' ) then
-                                      -- Respective byte enables are asserted as per write strobe slave register 5
-                                      output_reg_A_s(byte_index*8+7 downto byte_index*8) <= axi_wdata_i(byte_index*8+7 downto byte_index*8);
-                                  end if;
-                              end loop;
-                              
-                    when 6   => for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
-                                    if ( axi_wstrb_i(byte_index) = '1' ) then
-                                        -- Respective byte enables are asserted as per write strobe slave register 5
-                                        output_reg_A_s(byte_index*8+7 downto byte_index*8) <= 
-                                            output_reg_A_s(byte_index*8+7 downto byte_index*8) or
-                                            axi_wdata_i(byte_index*8+7 downto byte_index*8);
-                                    end if;
-                                end loop;
-
-                    --------------------------- CLEAR LED --------------------------------
-                    when 7 => -- clear led
-                                for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
-                                    if ( axi_wstrb_i(byte_index) = '1' ) then
-                                        -- Respective byte enables are asserted as per write strobe slave register 5
-                                        output_reg_A_s(byte_index*8+7 downto byte_index*8) <= 
-                                            output_reg_A_s(byte_index*8+7 downto byte_index*8) and
-                                            not axi_wdata_i(byte_index*8+7 downto byte_index*8);
-                                    end if;
-                                end loop;
-                    --------------------------- SET HEX  --------------------------------
-                    when 8   => -- set hex
-                                for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
-                                    if ( axi_wstrb_i(byte_index) = '1' ) then
-                                        -- Respective byte enables are asserted as per write strobe slave register 5
-                                        output_reg_B_s(byte_index*8+7 downto byte_index*8) <= axi_wdata_i(byte_index*8+7 downto byte_index*8);
-                                    end if;
-                                end loop;
-                    ---------------------------------------------------------------------  
-                    when 9   => for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
-                                    if ( axi_wstrb_i(byte_index) = '1' ) then
-                                        -- Respective byte enables are asserted as per write strobe slave register 5
-                                        output_reg_C_s(byte_index*8+7 downto byte_index*8) <= axi_wdata_i(byte_index*8+7 downto byte_index*8);
-                                    end if;
-                                end loop;
+                    ----- KERNEL REGISTERS -------------------------------------
+                    when 1 =>
+                        for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
+                            if ( axi_wstrb_i(byte_index) = '1' ) then
+                                kern_reg_0_3_s(byte_index*8+7 downto byte_index*8) <= axi_wdata_i(byte_index*8+7 downto byte_index*8);
+                            end if;
+                        end loop;
+                    when 2 =>
+                        for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
+                            if ( axi_wstrb_i(byte_index) = '1' ) then
+                                kern_reg_4_7_s(byte_index*8+7 downto byte_index*8) <= axi_wdata_i(byte_index*8+7 downto byte_index*8);
+                            end if;
+                        end loop;
+                    when 3 =>
+                        for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
+                            if ( axi_wstrb_i(byte_index) = '1' ) then
+                                kern_reg_8_s(byte_index*8+7 downto byte_index*8) <= axi_wdata_i(byte_index*8+7 downto byte_index*8);
+                            end if;
+                        end loop;
+                    ----- IMAGE REGISTERS FOR FIFO --------------------------------
+                    when 4 =>
+                        for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
+                            if ( axi_wstrb_i(byte_index) = '1' ) then
+                                -- fill the fifo element with the data [0-3]
+                                img_fifo_data_in(byte_index*8+7 downto byte_index*8) <= axi_wdata_i(byte_index*8+7 downto byte_index*8);
+                                img_fifo_write_en <= '1';
+                            end if;
+                        end loop;
+                    --------------------------------------------------------------------
                     when others => null;
                 end case;
             end if;
         end if;
     end process;
 
-    output_reg_A_o <= output_reg_A_s;
-    output_reg_B_o <= output_reg_B_s;
-    output_reg_C_o <= output_reg_C_s;
-
-    process (clk_i, reset_s)
-    begin
-        if reset_s = '1' then
-            input_reg_A_s <= (others => '0');
-            input_reg_B_s <= (others => '0');
-        elsif rising_edge(clk_i) then
-            input_reg_A_s <= input_reg_A_i;
-            input_reg_B_s <= input_reg_B_i;
-        end if;
-    end process;
-
-
-  
 -----------------------------------------------------------
 -- Write respond channel
 
@@ -416,41 +414,34 @@ begin
     -- and the slave is ready to accept the read address.
     axi_data_rden_s <= axi_raddr_done_s and (not axi_rvalid_s);
 
-    process (axi_araddr_mem_s, 
-        internal_reg_s, 
-        input_reg_A_s, 
-        input_reg_B_s, 
-        output_reg_A_s, 
-        output_reg_B_s, 
-        output_reg_C_s,
-        edge_capture_s)
+    process (axi_araddr_mem_s,
+            kern_reg_0_3_s,
+            kern_reg_4_7_s,
+            edge_capture_s,
+            process_fifo_data_out,
+            can_read_write_s
+       )
         --number address to access 32 or 64 bits data
         variable int_raddr_v  : natural;
     begin
         int_raddr_v   := to_integer(unsigned(axi_araddr_mem_s));
         axi_rdata_s <= x"A5A5A5A5"; --default value
+        process_fifo_read_en <= '0';
         case int_raddr_v is
             when 0 =>
                 axi_rdata_s <= CST_ADDR_0_FOR_TST;
             when 1 =>
-                axi_rdata_s <= internal_reg_s;
+                axi_rdata_s <= kern_reg_0_3_s;
             when 2 =>
-                axi_rdata_s <= input_reg_A_s;
-
-            ------------------------ READ EDGE -----------------------------------
+                axi_rdata_s <= kern_reg_4_7_s;
             when 3 =>
-                axi_rdata_s <= edge_capture_s;
-            ---------------------------------------------------------------------
-            when 4 =>
-                axi_rdata_s <= input_reg_B_s;
-            when 5 =>
-                axi_rdata_s <= output_reg_A_s;
+                axi_rdata_s <= kern_reg_8_s;
+            when 7 => 
+                axi_rdata_s <= process_fifo_data_out;
+                process_fifo_read_en <= '1';
             when 8 =>
-                axi_rdata_s <= output_reg_B_s;
-            when 9 =>
-                axi_rdata_s <= output_reg_C_s;
+                axi_rdata_s <= not process_fifo_empty & not process_fifo_full;
             when others =>
-                -- default value if address > 5
                 axi_rdata_s <= x"A5A5A5A5";
         end case;
     end process;
@@ -466,6 +457,60 @@ begin
                 -- output the read dada
                 -- Read address mux
                 axi_rdata_o <= axi_rdata_s;
+            end if;
+        end if;
+    end process;
+
+-----------------------------------------------------------
+-- FIFO
+      -- Update the fill count
+  PROC_COUNT : process(head, tail)
+  begin
+    if head < tail then
+      fill_ocunt_s <= head - tail + RAM_DEPTH;
+    else
+      fill_ocunt_s <= head - tail;
+    end if;
+  end process;
+
+-----------------------------------------------------------
+-- computation
+    PROCESSING_FIFO : process(clk_i, reset_s)
+        signal comp_head : integer := 0;
+    begin
+        if reset_s = '1' then
+            comp_head <= 0;
+            img_fifo_read_en <= '0';
+            process_fifo_write_en <= '0';
+            comp_head <= 0;
+        elsif rising_edge(clk_i) then
+            -- calculate the output of element i in ram * kernel and store it in ram_comp
+            if img_fifo_empty = '0' then
+                -- read the first element of the fifo
+                if comp_head = 0 then
+                    process_fifo_data_in <= img_fifo_data_out(7 downto 0) * kern_reg_0_3_s(7 downto 0)+
+                                            img_fifo_data_out(15 downto 8) * kern_reg_0_3_s(15 downto 8)+
+                                            img_fifo_data_out(23 downto 16) * kern_reg_0_3_s(23 downto 16)+
+                                            img_fifo_data_out(31 downto 24) * kern_reg_0_3_s(31 downto 24);
+                end if;
+                if comp_head = 1 then
+                    process_fifo_data_in <= img_fifo_data_out(7 downto 0) * kern_reg_4_7_s(7 downto 0)+
+                                            img_fifo_data_out(15 downto 8) * kern_reg_4_7_s(15 downto 8)+
+                                            img_fifo_data_out(23 downto 16) * kern_reg_4_7_s(23 downto 16)+
+                                            img_fifo_data_out(31 downto 24) * kern_reg_4_7_s(31 downto 24);
+                end if;
+                if comp_head = 2 then
+                    process_fifo_data_in <= img_fifo_data_out(7 downto 0) * kern_reg_8_s(7 downto 0)+
+                                            img_fifo_data_out(15 downto 8) * kern_reg_8_s(15 downto 8)+
+                                            img_fifo_data_out(23 downto 16) * kern_reg_8_s(23 downto 16)+
+                                            img_fifo_data_out(31 downto 24) * kern_reg_8_s(31 downto 24);
+                end if;
+                    process_fifo_write_en <= '1';
+                    img_fifo_read_en <= '1';
+                    comp_head <= comp_head + 1;
+                    if comp_head = 2 then
+                        comp_head <= 0;
+                    end if;
             end if;
         end if;
     end process;
