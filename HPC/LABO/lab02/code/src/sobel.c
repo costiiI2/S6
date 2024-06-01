@@ -65,38 +65,34 @@ struct img_1D_t *edge_detection_1D(const struct img_1D_t *input_img)
     return res_img;
 }
 
-void rgb_to_grayscale_1D(const struct img_1D_t *img, struct img_1D_t *result)
-{
-    int components = img->components;
+struct img_1D_t *allocate_image_1D(int width, int height, int components){
+    struct img_1D_t *img;
 
-    if (components != COMPONENT_RGB && components != COMPONENT_RGBA)
-    {
-        fprintf(stderr, "Error: image is not in RGB format\n");
-        return;
+    if (components == 0 || components > COMPONENT_RGBA)
+        return NULL;
+
+    /* Allocate struct */
+    img = (struct img_1D_t*)malloc(sizeof(struct img_1D_t));
+    if (!img) {
+        fprintf(stderr, "[%s] allocation error\n", __func__);
+        perror(__func__);
+        exit(EXIT_FAILURE);
     }
 
-    int width = img->width;
-    int height = img->height;
-    int size = width * height;
+    img->width = width;
+    img->height = height;
+    img->components = components;
 
-    uint8_t *src = img->data;
-    uint8_t *dst = result->data;
-
-    for (int i = 0; i < size; i++)
-    {
-        int index = i * components;
-        uint8_t r = src[index + R_OFFSET];
-        uint8_t g = src[index + G_OFFSET];
-        uint8_t b = src[index + B_OFFSET];
-
-        dst[i] = (uint8_t)(FACTOR_R * r + FACTOR_G * g + FACTOR_B * b);
+    /* Allocate space for image data */
+    img->data = (uint8_t*)calloc(img->width * img->height *img->components, sizeof(uint8_t));
+    if (!(img->data)) {
+        fprintf(stderr, "[%s] image allocation error\n", __func__);
+        perror(__func__);
+        exit(EXIT_FAILURE);
     }
 
-    result->width = width;
-    result->height = height;
-    result->components = COMPONENT_GRAYSCALE;
+    return img;
 }
-
 
 void gaussian_filter_1D(const struct img_1D_t *img, struct img_1D_t *res_img, const uint16_t *kernel)
 {

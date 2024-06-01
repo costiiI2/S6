@@ -1,17 +1,10 @@
 /*****************************************************************************************
- * HEIG-VD
- * Haute Ecole d'Ingenerie et de Gestion du Canton de Vaud
- * School of Business and Engineering in Canton de Vaud
- *****************************************************************************************
- * REDS Institute
- * Reconfigurable Embedded Digital Systems
- *****************************************************************************************
  *
  * File                 : fpga_gpio.c
  * Author               : Cecchet Costantino
  * Date                 : 01.03.2024
  *
- * Context              : SOCF tutorial lab
+ * Context              : Lab09
  *
  *****************************************************************************************
  * Brief: laboratoire 3
@@ -19,160 +12,256 @@
  *****************************************************************************************
  * Modifications :
  * Ver    Date        Student      Comments
- * 1.0	  01.03.24    CCO	       First version Labo 2
- * 1.1    24.03.24    CCO          modified for SCF L-3
+ * 1.0	  01.06.24    CCO	       First version Labo 9
  *
  *****************************************************************************************/
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
 #include "axi_lw.h"
-#include "modules/alfanum.h"
+#include "image.h"
+
 int __auto_semihosting;
 
+#define MAP_SIZE 4096UL
+#define MAP_MASK (MAP_SIZE - 1)
+
+#define USER_MODE 0x1
+#define BAREMETAL_MODE 0x2
+
+#define MODE USER_MODE
+
+#define ITF_REG(_x_) *(volatile uint32_t *)((AXI_LW_HPS_FPGA_BASE_ADD) + _x_)
+
 #define CNST 0x0
-#define TEST_REG 0x4
-#define KEYS 0x8 // not used for this program
-#define EDGE_CAP 0xC
-#define SWITCHES 0x10
-#define LED_OFFSET 0x14
-#define LED_SET 0x18 // not used for this program
-#define LED_CLR 0x1C // not used for this program
-#define HEX3_0_OFFSET 0x20
-#define HEX5_4_OFFSET 0x24
 
-#define LED_ON 0x3FF
-#define LED_OFF 0x0
+#define KERNEL_0_3_OFFSET 0x4
+#define KERNEL_4_7_OFFSET 0x8
+#define KERNEL_8_OFFSET 0xC
 
-#define KEY_0			(1 << 0)
-#define KEY_1			(1 << 1)
-#define KEY_2			(1 << 2)
-#define KEY_3			(1 << 3)
+#define IMG_OFFSET 0x10
 
-#define MIN_VAL 0
-#define MAX_VAL 1023
+#define RETURN_OFFSET 0x1C
+
+#define READ_WRITE_OFFSET 0x20
+
+#define READ_BIT 0x1
+#define WRITE_BIT 0x2
 
 #define CST 0xBADB100D
 
-#define ITF_REG(_x_)	*(volatile uint32_t *)							\
-						((AXI_LW_HPS_FPGA_BASE_ADD) + _x_)
+#define KERNEL_SIZE 9
+
+#define PNG_STRIDE_IN_BYTES 0
+
+#define COMPONENT_RGBA 4
+#define COMPONENT_RGB 3
+#define COMPONENT_GRAYSCALE 1
 
 
-                        
-static uint8_t key_pressed = 0;
-static uint8_t error = 0;
-static uint16_t hex = 0;
-
-void write_leds(uint32_t maskled)
+void write_register(uint32_t off, uint32_t value)
 {
-    ITF_REG(LED_OFFSET) = maskled;
+#if MODE == USER_MODE
+
+    int fd;
+
+    size_t length = _SC_PAGE_SIZE,
+           mapped_length;
+    off_t offset = AXI_LW_HPS_FPGA_BASE_ADD,
+          pge_offset;
+
+    if ((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1)
+    {
+        printf("Couldn't open /dev/mem... Program abort!\n");
+        return;
+    }
+
+    /* mmap()'s offset must be page aligned */
+    pge_offset = offset & ~(sysconf(_SC_PAGE_SIZE) - 1);
+
+    /* Real length considers the offset and lower page difference */
+    mapped_length = length + offset - pge_offset;
+
+    void *base = mmap(NULL, mapped_length,
+                      PROT_READ | PROT_WRITE,
+                      MAP_SHARED, fd, pge_offset);
+
+    volatile uint32_t *reg = base + off;
+    *reg = value;
+
+    munmap(base, MAP_SIZE);
+    close(fd);
+#endif
+
+#if MODE == BAREMETAL_MODE
+    ITF_REG(off) = value;
+#endif
 }
 
-uint32_t read_switches()
+uint32_t read_register(uint32_t off)
 {
-    return ITF_REG(SWITCHES);
+#if MODE == USER_MODE
+    int fd;
+
+    size_t length = _SC_PAGE_SIZE,
+           mapped_length;
+    off_t offset = AXI_LW_HPS_FPGA_BASE_ADD,
+          pge_offset;
+
+    if ((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1)
+    {
+        printf("Couldn't open /dev/mem... Program abort!\n");
+        return 0;
+    }
+
+    /* mmap()'s offset must be page aligned */
+    pge_offset = offset & ~(sysconf(_SC_PAGE_SIZE) - 1);
+
+    /* Real length considers the offset and lower page difference */
+    mapped_length = length + offset - pge_offset;
+
+    void *base = mmap(NULL, mapped_length,
+                      PROT_READ | PROT_WRITE,
+                      MAP_SHARED, fd, pge_offset);
+
+    volatile uint32_t *reg = base + off;
+    uint32_t value = *reg;
+
+    munmap(base, MAP_SIZE);
+    close(fd);
+
+    return value;
+#endif
+#if MODE == BAREMETAL_MODE
+    return ITF_REG(off);
+#endif
 }
+
+
+const uint8_t kernel[KERNEL_SIZE] = {
+    1,
+    2,
+    1,
+    2,
+    4,
+    2,
+    1,
+    2,
+    1,
+};
 
 void setup()
 {
     /* read CST */
     if (ITF_REG(CNST) != CST)
     {
-      error = 1;
+        printf("Error: CST not found\n");
     }
-    /* test read write */
-    ITF_REG(TEST_REG) = CST;
-    if (ITF_REG(TEST_REG) != CST)
-    {
-      error = 1;
-    }
-
-    if (error == 1)
-    {
-       return;
-    }
-    /* Base set up*/
-    write_leds(LED_OFF);
 }
 
-void clear_key_pressed(int key_pressed)
+
+struct img_1D_t *convolution_1D(struct img_1D_t *img)
 {
-    /* clear error */
-    if (error == 1)
+    struct img_1D_t *result_img;
+    int i, j, k;
+    int sum;
+    int width = img->width;
+    int height = img->height;
+    int components = img->components;
+
+    result_img = allocate_image_1D(width, height, components);
+
+    // Define a pointer to the color channels
+    uint8_t **channels[3] = {&img->r, &img->g, &img->b};
+    uint8_t **result_channels[3] = {&result_img->r, &result_img->g, &result_img->b};
+
+    // Loop over all color channels
+    for (int c = 0; c < 3; c++)
     {
-        write_leds(LED_OFF);
-        error = 0;
+        // Copy top and bottom edges
+        for (i = 0; i < img->width; i++)
+        {
+            (*result_channels[c])[i] = (*channels[c])[i];                                                                   // Top edge
+            (*result_channels[c])[(img->height - 1) * img->width + i] = (*channels[c])[(img->height - 1) * img->width + i]; // Bottom edge
+        }
+
+        // Copy left and right edges
+        for (j = 0; j < img->height; j++)
+        {
+            (*result_channels[c])[j * img->width] = (*channels[c])[j * img->width];                                   // Left edge
+            (*result_channels[c])[j * img->width + img->width - 1] = (*channels[c])[j * img->width + img->width - 1]; // Right edge
+        }
+
+        // Start convolution
+        int i_read = 1;
+        int j_read = 1;
+        for (j = 1; j < img->height - 1;)
+        {
+            for (i = 1; i < img->width - 1;)
+            {
+                // Load all 9 pixels to IP
+                for (k = 0; k < 9;)
+                {
+                    // If a write is ready, store a pixel else loop
+                    if (read_register(READ_WRITE_OFFSET) & WRITE_BIT)
+                    {
+                        write_register(IMG_OFFSET, (uint32_t) & (*channels[c])[(j + (k / 3 - 1)) * img->width + (i + (k % 3 - 1))]);
+                        k++;
+                    }
+                }
+
+                // If a result is ready, store it else continue
+                if (read_register(READ_WRITE_OFFSET) & READ_BIT)
+                {
+                    (*result_channels[c])[j_read * img->width + i_read++] = read_register(RETURN_OFFSET);
+                    if (i_read == img->width - 1)
+                    {
+                        i_read = 1;
+                        j_read++;
+                    }
+                }
+                i++;
+            }
+            j++;
+        }
+
+        // Wait for all data to be read
+        while (j_read < img->height - 1)
+        {
+            if (read_register(READ_WRITE_OFFSET) & READ_BIT)
+            {
+                (*result_channels[c])[j_read * img->width + i_read++] = read_register(RETURN_OFFSET);
+                if (i_read == img->width - 1)
+                {
+                    i_read = 1;
+                    j_read++;
+                }
+            }
+        }
     }
-    /* clear key */
-    ITF_REG(EDGE_CAP) = key_pressed;
+
+    return result_img;
 }
 
-void decimal_write_hex(int val)
+void set_kernel_1D()
 {
-   
-    uint32_t hex0_3 = 0;
-    uint32_t hex4_5 = 0;
-   
-    for (int i = 0; i < 6; i++)
-{
-    if (i < 4)
-    {
-        hex0_3 = hex0_3 | (hexa[val % 10] << (i * 7));
-    }
-    else
-    {
-        hex4_5 = hex4_5 | (hexa[val % 10] << ((i - 4) * 7));
-    }
-    val = val / 10;
+    write_register(KERNEL_0_3_OFFSET, kernel[0] << 24 | kernel[1] << 16 | kernel[2] << 8 | kernel[3]);
+    write_register(KERNEL_4_7_OFFSET, kernel[4] << 24 | kernel[5] << 16 | kernel[6] << 8 | kernel[7]);
+    write_register(KERNEL_8_OFFSET, kernel[8]);
 }
-    ITF_REG(HEX3_0_OFFSET) = ~hex0_3;
-    ITF_REG(HEX5_4_OFFSET) = ~hex4_5;
-}
-    
 
 int main(void)
 {
 
     setup();
-    /* check if error while initializing */
-    if (error == 1)
-        return 1;
-    
-    while (1)
-    {
-        key_pressed = ITF_REG(EDGE_CAP);
+    struct img_1D_t *img_1d;
+    struct img_1D_t *result_img;
+    set_kernel_1D();
 
-        if (key_pressed & KEY_0)
-        {
-            clear_key_pressed(KEY_0);
-            hex = read_switches();
-        }
-        if (key_pressed & KEY_1)
-        {
-            clear_key_pressed(KEY_1);
-            if (hex == MIN_VAL){
-                write_leds(LED_ON);
-                error = 1;
-                continue;
-            }
-            hex--;
-        }
-        if (key_pressed & KEY_2)
-        {
-            clear_key_pressed(KEY_2);
-            if (hex == MAX_VAL){
-                write_leds(LED_ON);
-                error = 1;
-                continue;
-            }
-                        hex++;
-        }
-        if (key_pressed & KEY_3)
-        {
-            clear_key_pressed(KEY_3);
-            hex = 0;
-        }
-
-        decimal_write_hex(hex);
-
-    }
+    img_1d = load_image_1D("image.png");
+    result_img = convolution_1D(img_1d);
+    save_image("image.png", result_img);
 }

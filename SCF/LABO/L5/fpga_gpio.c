@@ -40,7 +40,7 @@ int __auto_semihosting;
 #define USER_MODE 0x1
 #define BAREMETAL_MODE 0x2
 
-#define MODE DRIVER_MODE
+#define MODE USER_MODE
 
 #define CST_OFFSET 0x0
 #define TEST_REG 0x4

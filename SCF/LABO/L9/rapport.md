@@ -84,20 +84,9 @@ Ce laboratoire va nous permettre de développer de A à Z un système complet po
 
 vhdl :
 
-- un registre de idx_read (2 bytes)/ idx_write (2 bytes)
 - un registre can_read (1 byte) / can_write (1 byte) 
-- un registre taille liste (2 bytes)
-- un registre nombre de valeurs dans la liste (2 bytes)
 
-- lors de l'écriture de l'image on incrémente le nombre de valeurs dans la liste et l'idx_write
-- lors de la lecture de l'image on décrémente le nombre de valeurs dans la liste et on incrémente l'idx_read
-- les deux idx sont modulo la taille de la liste
 
-- si # valeurs dans la liste == taille liste alors can_write = 0
-- si # valeurs dans la liste == 0 alors can_read = 0
-- return value est stocké dans le tableau de convolution a la dernière position
-- registre du nombre de valeur a calculer
-- registre offset a calculer
 
 
 pseudo code c:
@@ -117,10 +106,14 @@ set_img(img){
 while(i < taille img_res){
         if(can_write){
                 set_img(img[j++])//4 premier pixel
+                set_img(img[j++])//4 deuxieme pixel
+                set_img(img[j++])//4 troisieme pixel
+                increment_pixel();
                 
         }
         if(can_read){
-                img_result[i++] = read(0x1C) + read(0x1C) + read(0x1C) + read(0x1C);
+                img_result[i++] = read(0x1C);
+                increment_pixel();
         }
 }
 
@@ -128,7 +121,6 @@ psuedo code vhdl:
 
 list[N][3]
 
-img <= base_addr + 0x10 +(idx_write * 4)
 
 
 calcul :process (clk)
@@ -149,15 +141,7 @@ end process
 
 case setting img pixels:
                 set img[8] <= reg_32
-                idx_write++;
-                if(idx_write == taille_liste){
-                        idx_write <= 0
-                }
-                values_in_list++;
-                valeurs_a_calculer++;
-                if(values_in_list == taille_liste){
-                        can_write <= 0
-                }
+                
 
 case reading img pixels:
                 reg_32 <= img[idx_read + 8 + 2]-- getting last 8 bit value in register
@@ -172,3 +156,20 @@ case reading img pixels:
 
 case setting kernel values:
                 kernel[0-3] <= reg_32 
+
+
+´´´vhdl
+-- definition of the scfifo 256x32
+GENERIC MAP (
+		add_ram_output_register => "OFF",
+		intended_device_family => "Cyclone V",
+		lpm_numwords => 256,
+		lpm_showahead => "OFF",
+		lpm_type => "scfifo",
+		lpm_width => 32,
+		lpm_widthu => 8,
+		overflow_checking => "ON",
+		underflow_checking => "ON",
+		use_eab => "ON"
+	)
+´´´

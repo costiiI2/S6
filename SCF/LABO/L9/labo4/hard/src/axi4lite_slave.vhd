@@ -249,8 +249,7 @@ begin
     -- 0x0C	    (3) | kernel[8],-,-,-         | R/W
     -- --image registers--------------------------------
     -- 0x10	    (4) | set img[0-3]      	  | W
-    -- 0x14	    (5) | set img[4-7]      	  | W
-    -- 0x18	    (6) | set img[8],-,-,-        | W
+
     -- 0x1C     (7) | return value            | R
     -- --control registers------------------------------
     -- 0x20     (8) | Can write (1) / Can read (0) | R
@@ -261,7 +260,6 @@ begin
         variable int_waddr_v : natural;
     begin
         if reset_s = '1' then
-            head <= 0;
             kern_reg_0_3_s <= (others => '0');
             kern_reg_4_7_s <= (others => '0');
             kern_reg_8_s   <= (others => '0');
@@ -462,18 +460,6 @@ begin
     end process;
 
 -----------------------------------------------------------
--- FIFO
-      -- Update the fill count
-  PROC_COUNT : process(head, tail)
-  begin
-    if head < tail then
-      fill_ocunt_s <= head - tail + RAM_DEPTH;
-    else
-      fill_ocunt_s <= head - tail;
-    end if;
-  end process;
-
------------------------------------------------------------
 -- computation
     PROCESSING_FIFO : process(clk_i, reset_s)
         signal comp_head : integer := 0;
@@ -482,7 +468,6 @@ begin
             comp_head <= 0;
             img_fifo_read_en <= '0';
             process_fifo_write_en <= '0';
-            comp_head <= 0;
         elsif rising_edge(clk_i) then
             -- calculate the output of element i in ram * kernel and store it in ram_comp
             if img_fifo_empty = '0' then
