@@ -29,11 +29,6 @@ int __auto_semihosting;
 #define MAP_SIZE 4096UL
 #define MAP_MASK (MAP_SIZE - 1)
 
-#define USER_MODE 0x1
-#define BAREMETAL_MODE 0x2
-
-#define MODE USER_MODE
-
 #define ITF_REG(_x_) *(volatile uint32_t *)((AXI_LW_HPS_FPGA_BASE_ADD) + _x_)
 
 #define CNST 0x0
@@ -61,10 +56,8 @@ int __auto_semihosting;
 #define COMPONENT_RGB 3
 #define COMPONENT_GRAYSCALE 1
 
-
 void write_register(uint32_t off, uint32_t value)
 {
-#if MODE == USER_MODE
 
     int fd;
 
@@ -94,16 +87,10 @@ void write_register(uint32_t off, uint32_t value)
 
     munmap(base, MAP_SIZE);
     close(fd);
-#endif
-
-#if MODE == BAREMETAL_MODE
-    ITF_REG(off) = value;
-#endif
 }
 
 uint32_t read_register(uint32_t off)
 {
-#if MODE == USER_MODE
     int fd;
 
     size_t length = _SC_PAGE_SIZE,
@@ -134,12 +121,7 @@ uint32_t read_register(uint32_t off)
     close(fd);
 
     return value;
-#endif
-#if MODE == BAREMETAL_MODE
-    return ITF_REG(off);
-#endif
 }
-
 
 const uint8_t kernel[KERNEL_SIZE] = {
     1,
@@ -162,12 +144,10 @@ void setup()
     }
 }
 
-
 struct img_1D_t *convolution_1D(struct img_1D_t *img)
 {
     struct img_1D_t *result_img;
     int i, j, k;
-    int sum;
     int width = img->width;
     int height = img->height;
     int components = img->components;
@@ -253,15 +233,32 @@ void set_kernel_1D()
     write_register(KERNEL_8_OFFSET, kernel[8]);
 }
 
-int main(void)
+void print_usage()
+{
+    printf("Please provide an input image and an output image \n");
+}
+
+int main(int argc, char **argv)
 {
 
+    if (argc != 3)
+    {
+        fprintf(stderr, "Invalid number of arguments\n");
+        print_usage();
+        return EXIT_FAILURE;
+    }
+
+    printf("Welcome to the FPGA Convolution Lab\n");
     setup();
     struct img_1D_t *img_1d;
     struct img_1D_t *result_img;
+    printf("Setting kernel\n");
     set_kernel_1D();
 
-    img_1d = load_image_1D("image.png");
+    printf("Loading image\n");
+    img_1d = load_image_1D(argv[1]);
+    printf("Convoluting image\n");
     result_img = convolution_1D(img_1d);
-    save_image("image.png", result_img);
+    printf("Saving image\n");
+    save_image(argv[2], result_img);
 }

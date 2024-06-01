@@ -173,3 +173,12 @@ GENERIC MAP (
 		use_eab => "ON"
 	)
 ´´´
+
+## **lancer le projet**
+
+Pour lancer le programme il faut suivre les étapes suivantes:
+
+1. run le script 'setup.sh' dans le repertoire /lib pour initialiser le repo git.
+2. effectuer un 'make' pour compiler le projet.
+3. lancer le programme avec la commande './convolution' suivi des arguments nécessaires (image,output).
+
