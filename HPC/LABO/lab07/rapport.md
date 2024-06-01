@@ -69,30 +69,35 @@ Pour ce laboratoire, nous avons utilisé le profiler `coz-profiler` pour analyse
 
 ## **Analyse du code**
 
-Le code de base fourni dans main.c lis chaque caractère du fichier texte et compare avec le pattern. Si le caractère est égal au premier caractère du pattern, alors on compare les caractères suivants. Si le pattern est trouvé, on affiche la position du pattern dans le fichier texte.
+Le code de base fourni dans main.c lis chaque caractère du fichier texte et compare avec le pattern. Si le caractère est égal au premier caractère du pattern, alors on compare les caractères suivants. Si le pattern est trouvé, on termine la recherche et on affiche le résultat.
 
 On peux profiler ca avec `coz-profiler` pour voir les performances du code.
 
 Il faut ajouter des flags dans le code pour que le profiler puisse fonctionner correctement(COZ_PROGRESS, COZ_BEGIN, COZ_END).
 
-On compile le code avec le profiler:
+On compile le code avec openMP et les flags pour le profiler:
 
 ```bash
-$ gcc -g -gdwarf-3 main.c -o main
+$ gcc -g -gdwarf-3 -fopenmp main.c -o main
 ```
 
-puis on lance le profiler:
+puis on lance le programme avec le profiler:
 
 ```bash
 $ coz run ./main <input_file> <pattern>
 ```
 
-Ici si le fichier est trop petit on n'arrivera pas a voir les résultats du profiler. On peut donc utiliser un fichier plus grand pour que le profiler puisse afficher des résultats.
+Ici si le fichier fourni est trop petit on n'arrivera pas a voir les résultats du profiler ave COZ. On peut donc utiliser un fichier plus grand pour que le profiler puisse afficher des résultats. Ce dernier va afficher un graphique avec les résultats.
 
+Une fois ceci effectué on peut utiliser le fichier **profile.coz** pour visualiser les résultats avec le profiler.
 
-Une fois ceci effectuer on peut lancer le profiler et obtenir les résultats.
+```bash 
+$ coz display profile.coz
+```
 
-![coz-profiler](./coz-profiler.png)
+Si cette commande ne fonctionne pas, on peut utiliser le [**site web**](https://plasma-umass.org/coz/) de coz pour visualiser les résultats.
+
+![coz-profiler](pics/coz-profiler.png)
 
 ## **Analyse des résultats**
 
@@ -100,14 +105,19 @@ Grâce a ce graph nous voyons ou sont les problèmes de performance dans le code
 
 ## **Optimisation du code**
 
-On peux voir que dans la recherchere du pattern, on peux travailler en parallèle. On va donc utiliser openMP pour paralléliser la recherche du pattern.
+On peux voir que dans la recherche du pattern, on peux travailler en parallèle. On va donc utiliser openMP pour paralléliser la recherche du pattern.
 
 Nous allons dispatcher le fichier en plusieurs parties et chaque thread va chercher le pattern dans sa partie du fichier.
 
+Chaque thread va chercher le pattern dans une partie du fichier et si le pattern est trouvé, on termine la recherche.
+
+Le choix a été fait sur la boucle for car c'est ici que le code passe le plus de temps.
 
 ## **conclusion**
 
 cette optimisation nous permet de gagner en performance et de réduire le temps d'exécution du programme.
+
+Ce laboratoire nous a permis de voir comment utiliser le profiler `coz-profiler` pour analyser un code et trouver les problèmes de performance.
 
 
 ## **Environnement d'execution**

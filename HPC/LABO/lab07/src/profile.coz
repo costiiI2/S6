@@ -336,3 +336,17 @@ samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:88	count=251
 samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:90	count=47
 samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:94	count=15
 samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:98	count=16
+startup	time=1717230608097884663
+experiment	selected=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:48	speedup=0.00	duration=500162386	selected-samples=66
+throughput-point	name=main.c:91	delta=0
+throughput-point	name=main.c:86	delta=0
+latency-point	name=search_sequence	arrivals=0	departures=1	difference=8246986803801682540
+runtime	time=665879555
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:46	count=190
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:48	count=73
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:51	count=6
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:52	count=142
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:54	count=272
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:56	count=25
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:57	count=5
+samples	location=/home/costi/Desktop/S6/HPC/LABO/lab07/src/main.c:61	count=34

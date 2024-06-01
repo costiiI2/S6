@@ -4,6 +4,7 @@
 #include <coz.h>
 #include <omp.h>
 
+
 int find_sequence_in_file(const char *filename, const char *sequence)
 {
     FILE *file = fopen(filename, "r");
@@ -37,31 +38,31 @@ int find_sequence_in_file(const char *filename, const char *sequence)
 
     COZ_BEGIN("search_sequence"); // Start profiling the sequence search
 
-#pragma omp parallel for shared(found)
-    for (long i = 0; i <= file_size - sequence_length; i++)
+    #pragma omp parallel shared(found)
     {
-        if (found)
+        #pragma omp for
+        for (long i = 0; i <= file_size - sequence_length; i++)
         {
-            continue; // Skip further processing if sequence is already found
-        }
-
-        int match_count = 0;
-        for (size_t j = 0; j < sequence_length; j++)
-        {
-            if (file_content[i + j] == sequence[j])
+            if (found)
             {
-                match_count++;
+                continue; // Skip further processing if sequence is already found
             }
-            else
-            {
-                break;
-            }
-        }
 
-        if (match_count == sequence_length)
-        {
-#pragma omp atomic write
-            found = 1;
+            int match = 1;
+            for (size_t j = 0; j < sequence_length; j++)
+            {
+                if (file_content[i + j] != sequence[j])
+                {
+                    match = 0;
+                    break;
+                }
+            }
+
+            if (match)
+            {
+                #pragma omp atomic write
+                found = 1;
+            }
         }
     }
 
@@ -70,6 +71,7 @@ int find_sequence_in_file(const char *filename, const char *sequence)
     free(file_content);
     return found;
 }
+
 
 
 
