@@ -499,28 +499,28 @@ begin
 
     elsif rising_edge(clk_i) then
         -- calculate the output of element i in ram * kernel and store it in ram_comp
-        if img_fifo_empty = '0' then
-            -- read the first element of the fifo
+        if img_fifo_empty = '0' and  process_fifo_full = '0' then
+                    -- read the first element of the fifo
             if comp_head = 0 then
                 process_fifo_data_in <= std_logic_vector(resize(unsigned(img_fifo_data_out(7 downto 0)) * unsigned(kern_reg_0_3_s(7 downto 0)) +
-                unsigned(img_fifo_data_out(15 downto 8)) * unsigned(kern_reg_0_3_s(15 downto 8)) +
-                unsigned(img_fifo_data_out(23 downto 16)) * unsigned(kern_reg_0_3_s(23 downto 16)) +
-                unsigned(img_fifo_data_out(31 downto 24)) * unsigned(kern_reg_0_3_s(31 downto 24)), 64)(31 downto 0));
+                                                                unsigned(img_fifo_data_out(15 downto 8)) * unsigned(kern_reg_0_3_s(15 downto 8)) +
+                                                                unsigned(img_fifo_data_out(23 downto 16)) * unsigned(kern_reg_0_3_s(23 downto 16)) +
+                                                                unsigned(img_fifo_data_out(31 downto 24)) * unsigned(kern_reg_0_3_s(31 downto 24)), 64)(31 downto 0));
 
                 comp_head <= 1;
 
             elsif comp_head = 1 then
                 process_fifo_data_in <= std_logic_vector(resize(unsigned(img_fifo_data_out(7 downto 0)) * unsigned(kern_reg_4_7_s(7 downto 0)) +
-                                                              unsigned(img_fifo_data_out(15 downto 8)) * unsigned(kern_reg_4_7_s(15 downto 8)) +
-                                                              unsigned(img_fifo_data_out(23 downto 16)) * unsigned(kern_reg_4_7_s(23 downto 16)) +
-                                                              unsigned(img_fifo_data_out(31 downto 24)) * unsigned(kern_reg_4_7_s(31 downto 24)), 64)(31 downto 0));
+                                                                unsigned(img_fifo_data_out(15 downto 8)) * unsigned(kern_reg_4_7_s(15 downto 8)) +
+                                                                unsigned(img_fifo_data_out(23 downto 16)) * unsigned(kern_reg_4_7_s(23 downto 16)) +
+                                                                unsigned(img_fifo_data_out(31 downto 24)) * unsigned(kern_reg_4_7_s(31 downto 24)), 64)(31 downto 0));
                 comp_head <= 2;
                                                               
             elsif comp_head = 2 then
                 process_fifo_data_in <= std_logic_vector(resize(unsigned(img_fifo_data_out(7 downto 0)) * unsigned(kern_reg_8_s(7 downto 0)) +
-                                                              unsigned(img_fifo_data_out(15 downto 8)) * unsigned(kern_reg_8_s(15 downto 8)) +
-                                                              unsigned(img_fifo_data_out(23 downto 16)) * unsigned(kern_reg_8_s(23 downto 16)) +
-                                                              unsigned(img_fifo_data_out(31 downto 24)) * unsigned(kern_reg_8_s(31 downto 24)), 64)(31 downto 0));
+                                                                unsigned(img_fifo_data_out(15 downto 8)) * unsigned(kern_reg_8_s(15 downto 8)) +
+                                                                unsigned(img_fifo_data_out(23 downto 16)) * unsigned(kern_reg_8_s(23 downto 16)) +
+                                                                unsigned(img_fifo_data_out(31 downto 24)) * unsigned(kern_reg_8_s(31 downto 24)), 64)(31 downto 0));
                 comp_head <= 0;
                                                               
             end if;
@@ -538,25 +538,26 @@ begin
         out_data_s <= (others => '0');
         out_fifo_data_in <= (others => '0');
     elsif rising_edge(clk_i) then
-        if out_head = 0 then
-            out_data_s <= process_fifo_data_out;
-            process_fifo_read_en <= '1';
-            out_head <= 1;
-        end if;
-
-if out_head = 1 then
-    out_data_s <= std_logic_vector(unsigned(out_data_s) + unsigned(process_fifo_data_out));
-    process_fifo_read_en <= '1';
-    out_head <= 1;
-elsif out_head = 2 then
-    out_data_s <= std_logic_vector(unsigned(out_data_s) + unsigned(process_fifo_data_out));
-    process_fifo_read_en <= '1';
-    out_head <= 3;
-elsif out_head = 3 then
-            -- output the result to the output fifo
-            out_fifo_data_in <= out_data_s;
-            out_fifo_write_en <= '1';
-            out_head <= 0;
+        if process_fifo_empty = '0' and out_fifo_full = '0' then
+            if out_head = 0 then
+                out_data_s <= process_fifo_data_out;
+                process_fifo_read_en <= '1';
+                out_head <= 1;
+            end if;
+            if out_head = 1 then
+                out_data_s <= std_logic_vector(unsigned(out_data_s) + unsigned(process_fifo_data_out));
+                process_fifo_read_en <= '1';
+                out_head <= 1;
+            elsif out_head = 2 then
+                out_data_s <= std_logic_vector(unsigned(out_data_s) + unsigned(process_fifo_data_out));
+                process_fifo_read_en <= '1';
+                out_head <= 3;
+            elsif out_head = 3 then
+                -- output the result to the output fifo
+                out_fifo_data_in <= out_data_s;
+                out_fifo_write_en <= '1';
+                out_head <= 0;
+            end if;
         end if;
         
     end if;

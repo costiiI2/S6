@@ -43,8 +43,8 @@ int __auto_semihosting;
 
 #define READ_WRITE_OFFSET 0x20
 
-#define READ_BIT 0x1
-#define WRITE_BIT 0x2
+#define READ_BIT 0x2
+#define WRITE_BIT 0x1
 
 #define CST 0xBADB100D
 
@@ -155,7 +155,9 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
     // Loop over all color channels
     for (int c = 0; c < 3; c++)
     {
+        printf("Convoluting channel %d\n", c);
         // Copy top and bottom edges
+        printf("Copying edges\n");
         for (i = 0; i < img->width; i++)
         {
             (*result_channels[c])[i] = (*channels[c])[i];                                                                   // Top edge
@@ -167,7 +169,8 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
         {
             (*result_channels[c])[j * img->width] = (*channels[c])[j * img->width];                                   // Left edge
             (*result_channels[c])[j * img->width + img->width - 1] = (*channels[c])[j * img->width + img->width - 1]; // Right edge
-        }
+        }   
+        printf("Starting convolution\n");
 
         // Start convolution
         int i_read = 1;
@@ -182,9 +185,11 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
                     // If a write is ready, store a pixel else loop
                     if (read_register(READ_WRITE_OFFSET) & WRITE_BIT)
                     {
+                        printf("Writing data in img fifo at %d %d\n", i + (k % 3 - 1), j + (k / 3 - 1));
                         write_register(IMG_OFFSET, (uint32_t) & (*channels[c])[(j + (k / 3 - 1)) * img->width + (i + (k % 3 - 1))]);
                         k++;
                     }
+
                 }
 
                 // If a result is ready, store it else continue
@@ -205,8 +210,10 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
         // Wait for all data to be read
         while (j_read < img->height - 1)
         {
+            printf("Waiting for data to be read\n");
             if (read_register(READ_WRITE_OFFSET) & READ_BIT)
             {
+                printf("Reading data at %d %d\n", i_read, j_read);
                 (*result_channels[c])[j_read * img->width + i_read++] = read_register(RETURN_OFFSET);
                 if (i_read == img->width - 1)
                 {
