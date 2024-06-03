@@ -1,4 +1,4 @@
-CC=gcc
+CC=arm-linux-gnueabihf-gcc-6.4.1
 CFLAGS=  -g -Wall -Ilib/stb/ -I../include -fno-inline
 LDFLAGS= -lm
 DEBUGFLAGS= -std=c11 -Wall -Wextra -pedantic -g -Ilib/stb/ -I../include

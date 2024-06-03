@@ -21,9 +21,6 @@ library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
 
-LIBRARY altera_mf;
-    USE altera_mf_altera_mf_components.all;
-
 entity axi4lite_slave is
     generic (
         -- Users to add parameters here
@@ -129,22 +126,41 @@ architecture rtl of axi4lite_slave is
         );
     END COMPONENT;
     
-
+    --img fifo
     signal img_fifo_data_in    : std_logic_vector(31 downto 0);
     signal img_fifo_write_en   : std_logic;
     signal img_fifo_read_en    : std_logic;
     signal img_fifo_data_out   : std_logic_vector(31 downto 0);
     signal img_fifo_full       : std_logic;
     signal img_fifo_empty      : std_logic;
-    
+
+    -- convolution fifo
     signal process_fifo_data_in    : std_logic_vector(31 downto 0);
     signal process_fifo_write_en   : std_logic;
     signal process_fifo_read_en    : std_logic;
     signal process_fifo_data_out   : std_logic_vector(31 downto 0);
     signal process_fifo_full       : std_logic;
     signal process_fifo_empty      : std_logic;
+    signal comp_head : integer := 0;
+
+    -- output fifo
+    signal out_fifo_data_in    : std_logic_vector(31 downto 0);
+    signal out_fifo_write_en   : std_logic;
+    signal out_fifo_read_en    : std_logic;
+    signal out_fifo_data_out   : std_logic_vector(31 downto 0);
+    signal out_fifo_full       : std_logic;
+    signal out_fifo_empty      : std_logic;
+    signal out_head : integer := 0;
+    signal out_data_s : std_logic_vector(31 downto 0);
+
+
+
     
-    
+  
+
+begin
+
+      
     -- FIFO for the image
 
     img_fifo : fifo
@@ -170,7 +186,17 @@ architecture rtl of axi4lite_slave is
             q        => process_fifo_data_out
         );
 
-begin
+    -- FIFO for the output
+    out_fifo : fifo
+        port map (
+            clock    => clk_i,
+            data     => out_fifo_data_in,
+            rdreq    => out_fifo_read_en,
+            wrreq    => out_fifo_write_en,
+            empty    => out_fifo_empty,
+            full     => out_fifo_full,
+            q        => out_fifo_data_out
+        );
 
     reset_s  <= reset_i;
   
@@ -264,7 +290,6 @@ begin
             kern_reg_4_7_s <= (others => '0');
             kern_reg_8_s   <= (others => '0');
             axi_write_done_s <= '1';
-            process_fifo_data_in <= (others => '0');
             img_fifo_data_in <= (others => '0');
             img_fifo_write_en <= '0';
 
@@ -415,16 +440,17 @@ begin
     process (axi_araddr_mem_s,
             kern_reg_0_3_s,
             kern_reg_4_7_s,
-            edge_capture_s,
-            process_fifo_data_out,
-            can_read_write_s
+            kern_reg_8_s,
+            out_fifo_data_out,
+            out_fifo_empty
+            
        )
         --number address to access 32 or 64 bits data
         variable int_raddr_v  : natural;
     begin
         int_raddr_v   := to_integer(unsigned(axi_araddr_mem_s));
         axi_rdata_s <= x"A5A5A5A5"; --default value
-        process_fifo_read_en <= '0';
+        out_fifo_read_en <= '0';
         case int_raddr_v is
             when 0 =>
                 axi_rdata_s <= CST_ADDR_0_FOR_TST;
@@ -435,10 +461,11 @@ begin
             when 3 =>
                 axi_rdata_s <= kern_reg_8_s;
             when 7 => 
-                axi_rdata_s <= process_fifo_data_out;
-                process_fifo_read_en <= '1';
+                axi_rdata_s <= out_fifo_data_out;
+                out_fifo_read_en <= '1';
             when 8 =>
-                axi_rdata_s <= not process_fifo_empty & not process_fifo_full;
+            -- read / write
+                axi_rdata_s(1 downto 0) <= not out_fifo_empty & not img_fifo_full;
             when others =>
                 axi_rdata_s <= x"A5A5A5A5";
         end case;
@@ -460,44 +487,79 @@ begin
     end process;
 
 -----------------------------------------------------------
--- computation
-    PROCESSING_FIFO : process(clk_i, reset_s)
-        signal comp_head : integer := 0;
-    begin
-        if reset_s = '1' then
-            comp_head <= 0;
-            img_fifo_read_en <= '0';
-            process_fifo_write_en <= '0';
-        elsif rising_edge(clk_i) then
-            -- calculate the output of element i in ram * kernel and store it in ram_comp
-            if img_fifo_empty = '0' then
-                -- read the first element of the fifo
-                if comp_head = 0 then
-                    process_fifo_data_in <= img_fifo_data_out(7 downto 0) * kern_reg_0_3_s(7 downto 0)+
-                                            img_fifo_data_out(15 downto 8) * kern_reg_0_3_s(15 downto 8)+
-                                            img_fifo_data_out(23 downto 16) * kern_reg_0_3_s(23 downto 16)+
-                                            img_fifo_data_out(31 downto 24) * kern_reg_0_3_s(31 downto 24);
-                end if;
-                if comp_head = 1 then
-                    process_fifo_data_in <= img_fifo_data_out(7 downto 0) * kern_reg_4_7_s(7 downto 0)+
-                                            img_fifo_data_out(15 downto 8) * kern_reg_4_7_s(15 downto 8)+
-                                            img_fifo_data_out(23 downto 16) * kern_reg_4_7_s(23 downto 16)+
-                                            img_fifo_data_out(31 downto 24) * kern_reg_4_7_s(31 downto 24);
-                end if;
-                if comp_head = 2 then
-                    process_fifo_data_in <= img_fifo_data_out(7 downto 0) * kern_reg_8_s(7 downto 0)+
-                                            img_fifo_data_out(15 downto 8) * kern_reg_8_s(15 downto 8)+
-                                            img_fifo_data_out(23 downto 16) * kern_reg_8_s(23 downto 16)+
-                                            img_fifo_data_out(31 downto 24) * kern_reg_8_s(31 downto 24);
-                end if;
-                    process_fifo_write_en <= '1';
-                    img_fifo_read_en <= '1';
-                    comp_head <= comp_head + 1;
-                    if comp_head = 2 then
-                        comp_head <= 0;
-                    end if;
+
+-- convolution computation
+PROCESSING_FIFO : process(clk_i, reset_s)
+begin
+    if reset_s = '1' then
+        comp_head <= 0;
+        img_fifo_read_en <= '0';
+        process_fifo_write_en <= '0';
+        process_fifo_data_in <= (others => '0');
+
+    elsif rising_edge(clk_i) then
+        -- calculate the output of element i in ram * kernel and store it in ram_comp
+        if img_fifo_empty = '0' then
+            -- read the first element of the fifo
+            if comp_head = 0 then
+                process_fifo_data_in <= std_logic_vector(resize(unsigned(img_fifo_data_out(7 downto 0)) * unsigned(kern_reg_0_3_s(7 downto 0)) +
+                unsigned(img_fifo_data_out(15 downto 8)) * unsigned(kern_reg_0_3_s(15 downto 8)) +
+                unsigned(img_fifo_data_out(23 downto 16)) * unsigned(kern_reg_0_3_s(23 downto 16)) +
+                unsigned(img_fifo_data_out(31 downto 24)) * unsigned(kern_reg_0_3_s(31 downto 24)), 64)(31 downto 0));
+
+                comp_head <= 1;
+
+            elsif comp_head = 1 then
+                process_fifo_data_in <= std_logic_vector(resize(unsigned(img_fifo_data_out(7 downto 0)) * unsigned(kern_reg_4_7_s(7 downto 0)) +
+                                                              unsigned(img_fifo_data_out(15 downto 8)) * unsigned(kern_reg_4_7_s(15 downto 8)) +
+                                                              unsigned(img_fifo_data_out(23 downto 16)) * unsigned(kern_reg_4_7_s(23 downto 16)) +
+                                                              unsigned(img_fifo_data_out(31 downto 24)) * unsigned(kern_reg_4_7_s(31 downto 24)), 64)(31 downto 0));
+                comp_head <= 2;
+                                                              
+            elsif comp_head = 2 then
+                process_fifo_data_in <= std_logic_vector(resize(unsigned(img_fifo_data_out(7 downto 0)) * unsigned(kern_reg_8_s(7 downto 0)) +
+                                                              unsigned(img_fifo_data_out(15 downto 8)) * unsigned(kern_reg_8_s(15 downto 8)) +
+                                                              unsigned(img_fifo_data_out(23 downto 16)) * unsigned(kern_reg_8_s(23 downto 16)) +
+                                                              unsigned(img_fifo_data_out(31 downto 24)) * unsigned(kern_reg_8_s(31 downto 24)), 64)(31 downto 0));
+                comp_head <= 0;
+                                                              
             end if;
+            process_fifo_write_en <= '1';
+            img_fifo_read_en <= '1';
         end if;
-    end process;
+    end if;
+end process;
+
+RESULT_FIFO : process(clk_i, reset_s)
+begin
+    if reset_s = '1' then
+        out_fifo_write_en <= '0';
+        out_head <= 0;
+        out_data_s <= (others => '0');
+        out_fifo_data_in <= (others => '0');
+    elsif rising_edge(clk_i) then
+        if out_head = 0 then
+            out_data_s <= process_fifo_data_out;
+            process_fifo_read_en <= '1';
+            out_head <= 1;
+        end if;
+
+if out_head = 1 then
+    out_data_s <= std_logic_vector(unsigned(out_data_s) + unsigned(process_fifo_data_out));
+    process_fifo_read_en <= '1';
+    out_head <= 1;
+elsif out_head = 2 then
+    out_data_s <= std_logic_vector(unsigned(out_data_s) + unsigned(process_fifo_data_out));
+    process_fifo_read_en <= '1';
+    out_head <= 3;
+elsif out_head = 3 then
+            -- output the result to the output fifo
+            out_fifo_data_in <= out_data_s;
+            out_fifo_write_en <= '1';
+            out_head <= 0;
+        end if;
+        
+    end if;
+end process;
 
 end rtl;

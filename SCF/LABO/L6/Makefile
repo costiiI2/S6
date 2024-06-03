@@ -1,7 +1,7 @@
 ## Put here the path to kernel sources! ###
 KERNELDIR := /home/costi/Desktop/linux
 ### Put here the path to toolchain ###
-TOOLCHAIN := arm-linux-gnueabihf-
+TOOLCHAIN := arm-linux-gnueabihf-gcc-6.4.1
 obj-m =  drive_ff_15.o
 
 PWD := $(shell pwd)

@@ -103,19 +103,21 @@ uint32_t read_register(uint32_t off)
         printf("Couldn't open /dev/mem... Program abort!\n");
         return 0;
     }
+ 
 
     /* mmap()'s offset must be page aligned */
     pge_offset = offset & ~(sysconf(_SC_PAGE_SIZE) - 1);
 
     /* Real length considers the offset and lower page difference */
     mapped_length = length + offset - pge_offset;
-
+    
     void *base = mmap(NULL, mapped_length,
                       PROT_READ | PROT_WRITE,
                       MAP_SHARED, fd, pge_offset);
 
     volatile uint32_t *reg = base + off;
     uint32_t value = *reg;
+
 
     munmap(base, MAP_SIZE);
     close(fd);
@@ -135,14 +137,6 @@ const uint8_t kernel[KERNEL_SIZE] = {
     1,
 };
 
-void setup()
-{
-    /* read CST */
-    if (ITF_REG(CNST) != CST)
-    {
-        printf("Error: CST not found\n");
-    }
-}
 
 struct img_1D_t *convolution_1D(struct img_1D_t *img)
 {
@@ -237,6 +231,22 @@ void print_usage()
 {
     printf("Please provide an input image and an output image \n");
 }
+static int error = 0;
+
+void setup()
+{
+    printf("Setting up FPGA\n");
+    uint32_t cst = read_register(CNST);
+    /* read CST */
+    if (cst!= CST)  {
+        printf("Error: CST not found\n");
+        printf("Expected: %x\n", CST);
+        printf("Received: %x\n", cst);
+
+        error = 1;
+    }
+}
+
 
 int main(int argc, char **argv)
 {
@@ -250,10 +260,21 @@ int main(int argc, char **argv)
 
     printf("Welcome to the FPGA Convolution Lab\n");
     setup();
+    if (error)
+    {
+        return EXIT_FAILURE;
+    }
     struct img_1D_t *img_1d;
     struct img_1D_t *result_img;
     printf("Setting kernel\n");
     set_kernel_1D();
+
+    // read kernel values
+    printf("Kernel values: ");
+    int k_0_3 = read_register(KERNEL_0_3_OFFSET);
+    int k_4_7 = read_register(KERNEL_4_7_OFFSET);
+    int k_8 = read_register(KERNEL_8_OFFSET);
+    printf("\n%d %d %d\n%d %d %d\n%d %d %d\n", (k_0_3 >> 24) & 0xFF, (k_0_3 >> 16) & 0xFF, (k_0_3 >> 8) & 0xFF, (k_0_3)&0xFF, (k_4_7 >> 24) & 0xFF, (k_4_7 >> 16) & 0xFF, (k_4_7 >> 8) & 0xFF, (k_4_7)&0xFF, (k_8)&0xFF);
 
     printf("Loading image\n");
     img_1d = load_image_1D(argv[1]);
