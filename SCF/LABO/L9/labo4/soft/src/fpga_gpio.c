@@ -56,21 +56,14 @@ int __auto_semihosting;
 #define COMPONENT_RGB 3
 #define COMPONENT_GRAYSCALE 1
 
+static int fd;
 void write_register(uint32_t off, uint32_t value)
 {
-
-    int fd;
 
     size_t length = _SC_PAGE_SIZE,
            mapped_length;
     off_t offset = AXI_LW_HPS_FPGA_BASE_ADD,
           pge_offset;
-
-    if ((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1)
-    {
-        printf("Couldn't open /dev/mem... Program abort!\n");
-        return;
-    }
 
     /* mmap()'s offset must be page aligned */
     pge_offset = offset & ~(sysconf(_SC_PAGE_SIZE) - 1);
@@ -86,31 +79,22 @@ void write_register(uint32_t off, uint32_t value)
     *reg = value;
 
     munmap(base, MAP_SIZE);
-    close(fd);
 }
 
 uint32_t read_register(uint32_t off)
 {
-    int fd;
 
     size_t length = _SC_PAGE_SIZE,
            mapped_length;
     off_t offset = AXI_LW_HPS_FPGA_BASE_ADD,
           pge_offset;
 
-    if ((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1)
-    {
-        printf("Couldn't open /dev/mem... Program abort!\n");
-        return 0;
-    }
- 
-
     /* mmap()'s offset must be page aligned */
     pge_offset = offset & ~(sysconf(_SC_PAGE_SIZE) - 1);
 
     /* Real length considers the offset and lower page difference */
     mapped_length = length + offset - pge_offset;
-    
+
     void *base = mmap(NULL, mapped_length,
                       PROT_READ | PROT_WRITE,
                       MAP_SHARED, fd, pge_offset);
@@ -118,25 +102,24 @@ uint32_t read_register(uint32_t off)
     volatile uint32_t *reg = base + off;
     uint32_t value = *reg;
 
-
     munmap(base, MAP_SIZE);
-    close(fd);
 
     return value;
 }
 
-const uint8_t kernel[KERNEL_SIZE] = {
-    1,
-    2,
-    1,
-    2,
-    4,
-    2,
-    1,
-    2,
-    1,
-};
 
+const uint8_t kernel[9] = {1, 2, 1, 2, 4, 2, 1, 2, 1};
+
+int can_read()
+{
+    printf("Reading register %x\n", read_register(READ_WRITE_OFFSET));
+    return read_register(READ_WRITE_OFFSET) & READ_BIT;
+}
+
+int can_write()
+{
+    return read_register(READ_WRITE_OFFSET) & WRITE_BIT;
+}
 
 struct img_1D_t *convolution_1D(struct img_1D_t *img)
 {
@@ -151,7 +134,8 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
     // Define a pointer to the color channels
     uint8_t **channels[3] = {&img->r, &img->g, &img->b};
     uint8_t **result_channels[3] = {&result_img->r, &result_img->g, &result_img->b};
-
+    printf("Image width: %d\n", img->width);
+    printf("Image height: %d\n", img->height);
     // Loop over all color channels
     for (int c = 0; c < 3; c++)
     {
@@ -169,7 +153,7 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
         {
             (*result_channels[c])[j * img->width] = (*channels[c])[j * img->width];                                   // Left edge
             (*result_channels[c])[j * img->width + img->width - 1] = (*channels[c])[j * img->width + img->width - 1]; // Right edge
-        }   
+        }
         printf("Starting convolution\n");
 
         // Start convolution
@@ -177,24 +161,25 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
         int j_read = 1;
         for (j = 1; j < img->height - 1;)
         {
+            printf("Convoluting line %d\n", j);
             for (i = 1; i < img->width - 1;)
             {
                 // Load all 9 pixels to IP
                 for (k = 0; k < 9;)
                 {
                     // If a write is ready, store a pixel else loop
-                    if (read_register(READ_WRITE_OFFSET) & WRITE_BIT)
+                    if (can_write())
                     {
-                        printf("Writing data in img fifo at %d %d\n", i + (k % 3 - 1), j + (k / 3 - 1));
+                        // printf("Writing data in img fifo at %d %d\n", i + (k % 3 - 1), j + (k / 3 - 1));
                         write_register(IMG_OFFSET, (uint32_t) & (*channels[c])[(j + (k / 3 - 1)) * img->width + (i + (k % 3 - 1))]);
                         k++;
                     }
-
                 }
 
                 // If a result is ready, store it else continue
-                if (read_register(READ_WRITE_OFFSET) & READ_BIT)
+                if (can_read())
                 {
+                    printf("Reading data at %d %d before \n", i_read, j_read);
                     (*result_channels[c])[j_read * img->width + i_read++] = read_register(RETURN_OFFSET);
                     if (i_read == img->width - 1)
                     {
@@ -210,10 +195,9 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
         // Wait for all data to be read
         while (j_read < img->height - 1)
         {
-            printf("Waiting for data to be read\n");
-            if (read_register(READ_WRITE_OFFSET) & READ_BIT)
+            printf("Reading data at %d %d\n", i_read, j_read);
+            if (can_read())
             {
-                printf("Reading data at %d %d\n", i_read, j_read);
                 (*result_channels[c])[j_read * img->width + i_read++] = read_register(RETURN_OFFSET);
                 if (i_read == img->width - 1)
                 {
@@ -240,12 +224,26 @@ void print_usage()
 }
 static int error = 0;
 
+void print_img(struct img_1D_t *img)
+{
+    int i, j;
+    for (j = 0; j < img->height; j++)
+    {
+        for (i = 0; i < img->width; i++)
+        {
+            printf("%d ", img->r[j * img->width + i]);
+        }
+        printf("\n");
+    }
+}
+
 void setup()
 {
     printf("Setting up FPGA\n");
     uint32_t cst = read_register(CNST);
     /* read CST */
-    if (cst!= CST)  {
+    if (cst != CST)
+    {
         printf("Error: CST not found\n");
         printf("Expected: %x\n", CST);
         printf("Received: %x\n", cst);
@@ -253,7 +251,6 @@ void setup()
         error = 1;
     }
 }
-
 
 int main(int argc, char **argv)
 {
@@ -266,6 +263,11 @@ int main(int argc, char **argv)
     }
 
     printf("Welcome to the FPGA Convolution Lab\n");
+    if ((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1)
+    {
+        printf("Couldn't open /dev/mem... Program abort!\n");
+        return EXIT_FAILURE;
+    }
     setup();
     if (error)
     {
@@ -281,7 +283,7 @@ int main(int argc, char **argv)
     int k_0_3 = read_register(KERNEL_0_3_OFFSET);
     int k_4_7 = read_register(KERNEL_4_7_OFFSET);
     int k_8 = read_register(KERNEL_8_OFFSET);
-    printf("\n%d %d %d\n%d %d %d\n%d %d %d\n", (k_0_3 >> 24) & 0xFF, (k_0_3 >> 16) & 0xFF, (k_0_3 >> 8) & 0xFF, (k_0_3)&0xFF, (k_4_7 >> 24) & 0xFF, (k_4_7 >> 16) & 0xFF, (k_4_7 >> 8) & 0xFF, (k_4_7)&0xFF, (k_8)&0xFF);
+    printf("\n%d %d %d\n%d %d %d\n%d %d %d\n", (k_0_3 >> 24) & 0xFF, (k_0_3 >> 16) & 0xFF, (k_0_3 >> 8) & 0xFF, (k_0_3) & 0xFF, (k_4_7 >> 24) & 0xFF, (k_4_7 >> 16) & 0xFF, (k_4_7 >> 8) & 0xFF, (k_4_7) & 0xFF, (k_8) & 0xFF);
 
     printf("Loading image\n");
     img_1d = load_image_1D(argv[1]);
@@ -289,4 +291,13 @@ int main(int argc, char **argv)
     result_img = convolution_1D(img_1d);
     printf("Saving image\n");
     save_image(argv[2], result_img);
+    
+    printf("Printing image\n");
+    print_img(img_1d);
+    printf("Printing result\n");
+    print_img(result_img);
+
+    free_image(img_1d);
+    free_image(result_img);
+    close(fd);
 }
