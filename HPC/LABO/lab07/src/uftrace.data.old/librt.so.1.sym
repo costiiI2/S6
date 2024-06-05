@@ -1,0 +1,6 @@
+# symbols: 3
+0000000000001060 P __libc_fatal
+0000000000001070 P __libc_unwind_link_get
+0000000000001080 ? __dynsym_end
+0000000000001140 T __librt_version_placeholder
+0000000000001145 ? __sym_end

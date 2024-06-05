@@ -1,0 +1,5 @@
+# symbols: 2
+0000000000000660 P __cxa_finalize
+0000000000000678 ? __dynsym_end
+0000000000001100 T __libdl_version_placeholder
+0000000000001105 ? __sym_end

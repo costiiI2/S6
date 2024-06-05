@@ -465,7 +465,7 @@ begin
                 out_fifo_read_en <= '1';
             when 8 =>
             -- read / write
-                axi_rdata_s <= x"00000000";
+            
                 axi_rdata_s(1) <=  not out_fifo_empty;
                 axi_rdata_s(0) <=  not img_fifo_full;
             when others =>

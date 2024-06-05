@@ -1,0 +1,14 @@
+# symbols: 10
+0000000000001060 P free
+0000000000001070 P malloc
+0000000000001080 ? __dynsym_end
+00000000000012e0 T BrotliGetDictionary
+00000000000012f0 T BrotliSetDictionaryData
+0000000000001300 T BrotliDefaultAllocFunc
+0000000000001310 T BrotliDefaultFreeFunc
+0000000000001320 T BrotliGetTransforms
+0000000000001330 T BrotliTransformDictionaryWord
+00000000000015b5 ? __func_end
+0000000000002000 D _kBrotliPrefixCodeRanges
+0000000000002080 D _kBrotliContextLookupTable
+0000000000002880 ? __sym_end

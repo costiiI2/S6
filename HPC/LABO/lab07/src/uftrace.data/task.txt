@@ -1,0 +1,2 @@
+SESS timestamp=801.283534595 pid=5283 sid=3b521a7fe0768a7d exename="/home/costi/Desktop/S6/HPC/LABO/lab07/src/main"
+TASK timestamp=801.283834606 tid=5283 pid=5283

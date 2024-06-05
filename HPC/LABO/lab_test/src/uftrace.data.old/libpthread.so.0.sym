@@ -1,0 +1,9 @@
+# symbols: 4
+00000000000002fc d __abi_tag
+000000000000031c ? __sym_end
+0000000000000a90 P __cxa_finalize
+0000000000000aa8 ? __dynsym_end
+0000000000001100 t __libpthread_version_placeholder
+0000000000001105 ? __func_end
+0000000000004020 d completed.0
+0000000000004021 ? __sym_end
