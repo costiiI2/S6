@@ -327,9 +327,9 @@ begin
                             if ( axi_wstrb_i(byte_index) = '1' ) then
                                 -- fill the fifo element with the data [0-3]
                                 img_fifo_data_in(byte_index*8+7 downto byte_index*8) <= axi_wdata_i(byte_index*8+7 downto byte_index*8);
-                                img_fifo_write_en <= '1';
                             end if;
                         end loop;
+                        img_fifo_write_en <= '1';
                     --------------------------------------------------------------------
                     when others => null;
                 end case;
@@ -442,10 +442,10 @@ begin
             kern_reg_4_7_s,
             kern_reg_8_s,
             out_fifo_data_out,
-            out_fifo_empty
-            
+            out_fifo_empty,
+            img_fifo_full
        )
-        --number address to access 32 or 64 bits data
+        --number address to access
         variable int_raddr_v  : natural;
     begin
         int_raddr_v   := to_integer(unsigned(axi_araddr_mem_s));
@@ -464,10 +464,15 @@ begin
                 axi_rdata_s <= out_fifo_data_out;
                 out_fifo_read_en <= '1';
             when 8 =>
-            -- read / write
-            
-                axi_rdata_s(1) <=  not out_fifo_empty;
-                axi_rdata_s(0) <=  not img_fifo_full;
+                -- read / write
+                axi_rdata_s <= (others => '0');
+                axi_rdata_s(0) <= not img_fifo_full;
+                axi_rdata_s(1) <= not out_fifo_empty;
+
+                axi_rdata_s(2) <= process_fifo_full;
+                axi_rdata_s(3) <= process_fifo_empty;
+                axi_rdata_s(4) <= out_fifo_full;
+                axi_rdata_s(5) <= img_fifo_empty;
             when others =>
                 axi_rdata_s <= x"A5A5A5A5";
         end case;
@@ -540,6 +545,9 @@ begin
         out_data_s <= (others => '0');
         out_fifo_data_in <= (others => '0');
     elsif rising_edge(clk_i) then
+        out_fifo_write_en <= '0';
+        process_fifo_read_en <= '0';
+
         if process_fifo_empty = '0' and out_fifo_full = '0' then
             if out_head = 0 then
                 out_data_s <= process_fifo_data_out;
@@ -549,7 +557,7 @@ begin
             if out_head = 1 then
                 out_data_s <= std_logic_vector(unsigned(out_data_s) + unsigned(process_fifo_data_out));
                 process_fifo_read_en <= '1';
-                out_head <= 1;
+                out_head <= 2;
             elsif out_head = 2 then
                 out_data_s <= std_logic_vector(unsigned(out_data_s) + unsigned(process_fifo_data_out));
                 process_fifo_read_en <= '1';
@@ -558,8 +566,11 @@ begin
                 -- output the result to the output fifo
                 out_fifo_data_in <= out_data_s;
                 out_fifo_write_en <= '1';
+                out_head <= 4;
+            elsif out_head = 4 then
                 out_head <= 0;
             end if;
+                
         end if;
         
     end if;
