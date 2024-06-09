@@ -323,12 +323,7 @@ begin
                         end loop;
                     ----- IMAGE REGISTERS FOR FIFO --------------------------------
                     when 4 =>
-                        for byte_index in 0 to (AXI_DATA_WIDTH/8-1) loop
-                            if ( axi_wstrb_i(byte_index) = '1' ) then
-                                -- fill the fifo element with the data [0-3]
-                                img_fifo_data_in(byte_index*8+7 downto byte_index*8) <= axi_wdata_i(byte_index*8+7 downto byte_index*8);
-                            end if;
-                        end loop;
+                        img_fifo_data_in <= axi_wdata_i;
                         img_fifo_write_en <= '1';
                     --------------------------------------------------------------------
                     when others => null;
@@ -561,11 +556,10 @@ begin
     elsif rising_edge(clk_i) then
         out_fifo_write_en <= '0';
         process_fifo_read_en <= '0';
-        out_fifo_data_in <= (others => '0');
 
         if process_fifo_empty = '0' and out_fifo_full = '0' then
             if out_head = 0 then
-                out_data_s <= process_fifo_data_out;
+                out_data_s <= std_logic_vector(signed(out_data_s) + signed(process_fifo_data_out));
                 process_fifo_read_en <= '1';
                 out_head <= 1;
             elsif out_head = 1 then
@@ -582,6 +576,7 @@ begin
                 out_fifo_write_en <= '1';
                 out_head <= 4;
             elsif out_head = 4 then
+                out_data_s <= (others => '0');
                 out_head <= 0;
             end if;
                 
