@@ -170,7 +170,7 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
                     // If a write is ready, store a pixel else loop
                     if (can_write())
                     {
-                        // printf("Writing data in img fifo at %d %d\n", i + (k % 3 - 1), j + (k / 3 - 1));
+                        printf(".");
                         write_register(IMG_OFFSET, (uint32_t) & (*channels[c])[(j + (k / 3 - 1)) * img->width + (i + (k % 3 - 1))]);
                         k++;
                     }
@@ -179,8 +179,9 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
                 // If a result is ready, store it else continue
                 if (can_read())
                 {
-                    printf("Reading data at %d %d before \n", i_read, j_read);
-                    (*result_channels[c])[j_read * img->width + i_read++] = read_register(RETURN_OFFSET);
+                    int result = read_register(RETURN_OFFSET);
+                    printf("Reading data at %d %d = %d before \n", i_read, j_read, result);
+                    (*result_channels[c])[j_read * img->width + i_read++] = result;
                     if (i_read == img->width - 1)
                     {
                         i_read = 1;
@@ -195,10 +196,11 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
         // Wait for all data to be read
         while (j_read < img->height - 1)
         {
-            printf("Reading data at %d %d\n", i_read, j_read);
             if (can_read())
             {
-                (*result_channels[c])[j_read * img->width + i_read++] = read_register(RETURN_OFFSET);
+                int result = read_register(RETURN_OFFSET);
+                printf("Reading data at %d %d = %d after \n", i_read, j_read, result);
+                (*result_channels[c])[j_read * img->width + i_read++] = result;
                 if (i_read == img->width - 1)
                 {
                     i_read = 1;
