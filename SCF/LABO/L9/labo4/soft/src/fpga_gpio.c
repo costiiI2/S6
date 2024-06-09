@@ -57,6 +57,7 @@ int __auto_semihosting;
 #define COMPONENT_GRAYSCALE 1
 
 static int fd;
+
 void write_register(uint32_t off, uint32_t value)
 {
 
@@ -107,18 +108,136 @@ uint32_t read_register(uint32_t off)
     return value;
 }
 
+// 1 2 1
+// 2 4 2
+// 1 2 1
+int image[5][5] = {
+    {0, 0, 0, 0, 0},
+    {0, 1, 1, 1, 0},
+    {0, 1, 0, 1, 0},
+    {0, 1, 1, 1, 0},
+    {0, 0, 0, 0, 0}};
+
+int convolved_image[5][5] = {
+    {0, 0, 0, 0, 0},
+    {0, 8, 9, 8, 0},
+    {0, 9, 7, 9, 0},
+    {0, 8, 9, 8, 0},
+    {0, 0, 0, 0, 0}};
 
 const uint8_t kernel[9] = {1, 2, 1, 2, 4, 2, 1, 2, 1};
 
 int can_read()
 {
-    printf("Reading register %x\n", read_register(READ_WRITE_OFFSET));
+    uint32_t reg = read_register(READ_WRITE_OFFSET);
+    printf("img_full: %d, out_empty: %d, process_full: %d, process_empty: %d, out_full: %d, img_empty: %d\n",
+           !(reg >> 0 & 0x1), !(reg >> 1 & 0x1), reg >> 2 & 0x1, reg >> 3 & 0x1, reg >> 4 & 0x1, reg >> 5 & 0x1);
     return read_register(READ_WRITE_OFFSET) & READ_BIT;
 }
 
 int can_write()
 {
     return read_register(READ_WRITE_OFFSET) & WRITE_BIT;
+}
+
+void convolute_test()
+{
+    int timeout = 10;
+    int img[5][5] = {0};
+    int i_read = 1;
+    int j_read = 1;
+    can_read();
+    for (int i = 1; i < (5- 1); i++)
+    {
+        for (int j = 1; j < (5 - 1); j++)
+        {
+            uint8_t pixels[9] = {0};
+            int pixel_count = 0;
+            int matrix_count = 0;
+            int a = 0;
+            for (int k = 0; 1;)
+            {
+                if (pixel_count < 4 || k == 9)
+                {
+                    int tmp_i = i + (k / 3 - 1);
+                    int tmp_j = j + (k % 3 - 1);
+                    pixels[k] = image[tmp_j][tmp_i];
+                    pixel_count++;
+                    matrix_count++;
+                    k++;
+                }
+
+                if (can_write() && (pixel_count >= 4 || k == 9))
+                {
+                    // If we have 4 or more pixels, or we have collected all 9 pixels, send them
+                    uint32_t pixel_data = 0;
+                    for (int p = 0; p < pixel_count; p++)
+                    {
+                        pixel_data |= pixels[a++] << (24 - (8 * p));
+                    }
+                    if (matrix_count == 4)
+                    {
+                        printf("%d %d %d\n%d", (pixel_data >> 24) & 0xFF, (pixel_data >> 16) & 0xFF, (pixel_data >> 8) & 0xFF, pixel_data & 0xFF);
+                    }
+                    if (matrix_count == 8)
+                    {
+                        printf(" %d %d\n%d %d", (pixel_data >> 24) & 0xFF, (pixel_data >> 16) & 0xFF, (pixel_data >> 8) & 0xFF, pixel_data & 0xFF);
+                    }
+                    if (matrix_count == 9)
+                    {
+                        printf(" %d\n-----\n", (pixel_data >> 24) & 0xFF);
+                    }
+                    pixel_count = 0; // Reset the count for the next batch
+                    write_register(IMG_OFFSET, pixel_data);
+                    if (k == 9)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            if (can_read())
+            {
+                int result = read_register(RETURN_OFFSET);
+                printf("Read %d %d = %d  \n", j_read, i_read, result);
+                img[j_read][i_read++] = result;
+                if (i_read == 5 - 1)
+                {
+                    i_read = 1;
+                    j_read++;
+                }
+            }
+        }
+    }
+
+    while (j_read < (5 - 1) || timeout > 0)
+    {
+        if (can_read())
+        {
+            int result = read_register(RETURN_OFFSET);
+            printf("Read %d %d = %d after \n", j_read, i_read, result);
+            img[j_read][i_read++] = result;
+            if (i_read == 5 - 1)
+            {
+                i_read = 1;
+                j_read++;
+            }
+        }
+        else
+        {
+            timeout--;
+        }
+    }
+
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            printf("%02d ", img[i][j]);
+        }
+        printf("\n");
+    }
+    can_read();
 }
 
 struct img_1D_t *convolution_1D(struct img_1D_t *img)
@@ -215,9 +334,23 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
 
 void set_kernel_1D()
 {
+    // kernel in vhdl is
+    // 1 2 1 2
+    // 4 2 1 2
+    // 1 0 0 0
+    // const uint8_t kernel[9] = {1, 2, 1, 2, 4, 2, 1, 2, 1};
+
     write_register(KERNEL_0_3_OFFSET, kernel[0] << 24 | kernel[1] << 16 | kernel[2] << 8 | kernel[3]);
     write_register(KERNEL_4_7_OFFSET, kernel[4] << 24 | kernel[5] << 16 | kernel[6] << 8 | kernel[7]);
-    write_register(KERNEL_8_OFFSET, kernel[8]);
+    write_register(KERNEL_8_OFFSET, kernel[8] << 24);
+}
+
+void read_kernel()
+{
+    int k_0_3 = read_register(KERNEL_0_3_OFFSET);
+    int k_4_7 = read_register(KERNEL_4_7_OFFSET);
+    int k_8 = read_register(KERNEL_8_OFFSET);
+    printf("\n%d %d %d\n%d %d %d\n%d %d %d\n", (k_0_3 >> 24) & 0xFF, (k_0_3 >> 16) & 0xFF, (k_0_3 >> 8) & 0xFF, (k_0_3) & 0xFF, (k_4_7 >> 24) & 0xFF, (k_4_7 >> 16) & 0xFF, (k_4_7 >> 8) & 0xFF, (k_4_7) & 0xFF, (k_8 >> 24) & 0xFF);
 }
 
 void print_usage()
@@ -282,18 +415,19 @@ int main(int argc, char **argv)
 
     // read kernel values
     printf("Kernel values: ");
-    int k_0_3 = read_register(KERNEL_0_3_OFFSET);
-    int k_4_7 = read_register(KERNEL_4_7_OFFSET);
-    int k_8 = read_register(KERNEL_8_OFFSET);
-    printf("\n%d %d %d\n%d %d %d\n%d %d %d\n", (k_0_3 >> 24) & 0xFF, (k_0_3 >> 16) & 0xFF, (k_0_3 >> 8) & 0xFF, (k_0_3) & 0xFF, (k_4_7 >> 24) & 0xFF, (k_4_7 >> 16) & 0xFF, (k_4_7 >> 8) & 0xFF, (k_4_7) & 0xFF, (k_8) & 0xFF);
+    read_kernel();
 
+    printf("Convoluting test\n");
+    convolute_test();
+    close(fd);
+    return 0;
     printf("Loading image\n");
     img_1d = load_image_1D(argv[1]);
     printf("Convoluting image\n");
     result_img = convolution_1D(img_1d);
     printf("Saving image\n");
     save_image(argv[2], result_img);
-    
+
     printf("Printing image\n");
     print_img(img_1d);
     printf("Printing result\n");
@@ -301,5 +435,8 @@ int main(int argc, char **argv)
 
     free_image(img_1d);
     free_image(result_img);
+
+    printf("Convoluting test\n");
+    convolute_test();
     close(fd);
 }
