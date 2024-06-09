@@ -509,6 +509,7 @@ begin
                     -- read the first element of the fifo
 
             if comp_head = 0 then
+                -- TODO dont need 0 to 7 ???
                 process_fifo_data_in <= std_logic_vector(resize(signed(img_fifo_data_out(7 downto 0)) * signed(kern_reg_0_3_s(7 downto 0)) +
                                                                 signed(img_fifo_data_out(15 downto 8)) * signed(kern_reg_0_3_s(15 downto 8)) +
                                                                 signed(img_fifo_data_out(23 downto 16)) * signed(kern_reg_0_3_s(23 downto 16)) +

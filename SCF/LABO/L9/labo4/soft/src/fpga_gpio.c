@@ -33,9 +33,9 @@ int __auto_semihosting;
 
 #define CNST 0x0
 
-#define KERNEL_0_3_OFFSET 0x4
-#define KERNEL_4_7_OFFSET 0x8
-#define KERNEL_8_OFFSET 0xC
+#define KERNEL_0_2_OFFSET 0x4
+#define KERNEL_3_5_OFFSET 0x8
+#define KERNEL_6_8_OFFSET 0xC
 
 #define IMG_OFFSET 0x10
 
@@ -157,7 +157,7 @@ void convolute_test()
             int a = 0;
             for (int k = 0; 1;)
             {
-                if (pixel_count < 4 || k == 9)
+                if (pixel_count < 3 || k == 9)
                 {
                     int tmp_i = i + (k / 3 - 1);
                     int tmp_j = j + (k % 3 - 1);
@@ -167,7 +167,7 @@ void convolute_test()
                     k++;
                 }
 
-                if (can_write() && (pixel_count >= 4 || k == 9))
+                if (can_write() && (pixel_count >= 3 || k == 9))
                 {
                     // If we have 4 or more pixels, or we have collected all 9 pixels, send them
                     uint32_t pixel_data = 0;
@@ -175,24 +175,11 @@ void convolute_test()
                     {
                         pixel_data |= pixels[a++] << (24 - (8 * p));
                     }
-                    if (matrix_count == 4)
-                    {
-                        printf("%d %d %d\n%d", (pixel_data >> 24) & 0xFF, (pixel_data >> 16) & 0xFF, (pixel_data >> 8) & 0xFF, pixel_data & 0xFF);
-                    }
-                    if (matrix_count == 8)
-                    {
-                        printf(" %d %d\n%d %d", (pixel_data >> 24) & 0xFF, (pixel_data >> 16) & 0xFF, (pixel_data >> 8) & 0xFF, pixel_data & 0xFF);
-                    }
-                    if (matrix_count == 9)
-                    {
-                        printf(" %d\n-----\n", (pixel_data >> 24) & 0xFF);
-                    }
+                   
+                    printf("%d %d %d\n", (pixel_data >> 24) & 0xFF, (pixel_data >> 16) & 0xFF, (pixel_data >> 8) & 0xFF);
+                    
                     pixel_count = 0; // Reset the count for the next batch
                     write_register(IMG_OFFSET, pixel_data);
-                    if (k == 9)
-                    {
-                        break;
-                    }
                 }
             }
 
@@ -221,6 +208,10 @@ void convolute_test()
             {
                 i_read = 1;
                 j_read++;
+            }
+            if(j_read == 5 - 1)
+            {
+                break;
             }
         }
         else
@@ -332,7 +323,7 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
     return result_img;
 }
 
-void set_kernel_1D()
+void set_kernel()
 {
     // kernel in vhdl is
     // 1 2 1 2
@@ -340,23 +331,20 @@ void set_kernel_1D()
     // 1 0 0 0
     // const uint8_t kernel[9] = {1, 2, 1, 2, 4, 2, 1, 2, 1};
 
-    write_register(KERNEL_0_3_OFFSET, kernel[0] << 24 | kernel[1] << 16 | kernel[2] << 8 | kernel[3]);
-    write_register(KERNEL_4_7_OFFSET, kernel[4] << 24 | kernel[5] << 16 | kernel[6] << 8 | kernel[7]);
-    write_register(KERNEL_8_OFFSET, kernel[8] << 24);
+    write_register(KERNEL_0_2_OFFSET, kernel[0] << 24 | kernel[1] << 16 | kernel[2] << 8);
+    write_register(KERNEL_3_5_OFFSET, kernel[3] << 24 | kernel[4] << 16 | kernel[5] << 8 );
+    write_register(KERNEL_6_8_OFFSET, kernel[6] << 24 | kernel[7] << 16 | kernel[8] << 8);
 }
 
 void read_kernel()
 {
-    int k_0_3 = read_register(KERNEL_0_3_OFFSET);
-    int k_4_7 = read_register(KERNEL_4_7_OFFSET);
-    int k_8 = read_register(KERNEL_8_OFFSET);
-    printf("\n%d %d %d\n%d %d %d\n%d %d %d\n", (k_0_3 >> 24) & 0xFF, (k_0_3 >> 16) & 0xFF, (k_0_3 >> 8) & 0xFF, (k_0_3) & 0xFF, (k_4_7 >> 24) & 0xFF, (k_4_7 >> 16) & 0xFF, (k_4_7 >> 8) & 0xFF, (k_4_7) & 0xFF, (k_8 >> 24) & 0xFF);
+    int k_0_3 = read_register(KERNEL_0_2_OFFSET);
+    int k_4_7 = read_register(KERNEL_3_5_OFFSET);
+    int k_8 = read_register(KERNEL_6_8_OFFSET);
+    printf("\n%d %d %d\n%d %d %d\n%d %d %d\n", (k_0_3 >> 24) & 0xFF, (k_0_3 >> 16) & 0xFF, (k_0_3 >> 8) & 0xFF, (k_4_7 >> 24) & 0xFF, (k_4_7 >> 16) & 0xFF, (k_4_7 >> 8) & 0xFF, (k_8 >> 24) & 0xFF, (k_8 >> 16) & 0xFF, (k_8 >> 8) & 0xFF);
 }
 
-void print_usage()
-{
-    printf("Please provide an input image and an output image \n");
-}
+
 static int error = 0;
 
 void print_img(struct img_1D_t *img)
@@ -393,11 +381,11 @@ int main(int argc, char **argv)
     if (argc != 3)
     {
         fprintf(stderr, "Invalid number of arguments\n");
-        print_usage();
+        printf("Please provide an input image and an output image \n");
+
         return EXIT_FAILURE;
     }
 
-    printf("Welcome to the FPGA Convolution Lab\n");
     if ((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1)
     {
         printf("Couldn't open /dev/mem... Program abort!\n");
@@ -411,16 +399,17 @@ int main(int argc, char **argv)
     struct img_1D_t *img_1d;
     struct img_1D_t *result_img;
     printf("Setting kernel\n");
-    set_kernel_1D();
+    set_kernel();
 
     // read kernel values
     printf("Kernel values: ");
     read_kernel();
 
-    printf("Convoluting test\n");
     convolute_test();
     close(fd);
     return 0;
+
+
     printf("Loading image\n");
     img_1d = load_image_1D(argv[1]);
     printf("Convoluting image\n");

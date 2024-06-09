@@ -285,18 +285,6 @@ begin
 		-- LED
 		hps_io_0_hps_io_gpio_inst_GPIO53  => HPS_LED_io,
 		
-		-- DE1_I/O
-		axi_slave_input_reg_a_i(3 downto 0)    	=> KEY_i,
-		axi_slave_input_reg_b_i(9 downto 0)   => SW_i,
-        axi_slave_output_reg_a_o(9 downto 0) => LEDR_o,
-        axi_slave_output_reg_b_o(6 downto 0) => HEX0_o,
-        axi_slave_output_reg_b_o(13 downto 7) => HEX1_o,
-        axi_slave_output_reg_b_o(20 downto 14) => HEX2_o,
-        axi_slave_output_reg_b_o(27 downto 21) => HEX3_o,
-        axi_slave_output_reg_c_o(6 downto 0) => HEX4_o,
-        axi_slave_output_reg_c_o(13 downto 7) => HEX5_o,
-	  
-
 		-- Clock
 		clk_clk                           	=> CLOCK_50_i
     );
