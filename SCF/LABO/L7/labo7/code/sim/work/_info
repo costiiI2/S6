@@ -10,265 +10,274 @@ z2
 cModel Technology
 Z0 d/media/sf_Desktop/S6/SCF/LABO/L7/labo7/code/sim
 T_opt
-!s110 1715176510
-V[@g4S;5634_DgWR78LJX80
+!s110 1715590879
+VXTZA=]XcGQPD<GAfEh1a>1
 Z1 04 9 9 work neuron_tb testbench 1
-=1-000ae431a4f1-663b843d-a20f1-10de
-o-quiet -auto_acc_if_foreign -work work -G TESTCASE=0 -G DATASIZE=8 -G COMMA_POS=0 -G DUV=0 -G NBINPUTS=16
+=1-000ae431a4f1-6641d6de-77eeb-1629
+o-quiet -auto_acc_if_foreign -work work -G TESTCASE=0 -G DATASIZE=8 -G COMMA_POS=0 -G DUV=2 -G NBINPUTS=16
 Z2 tCvgOpt 0
 n@_opt
 Z3 OL;O;2020.1_1;71
-R0
 T_opt1
-!s110 1715177134
-VA4;iQP4fNB0o`@:ZSzTV81
+!s110 1715588917
+VdjDY?=FUQ2XA6DM^`3oN:0
 R1
-=1-000ae431a4f1-663b86ad-d8ce3-1318
-o-quiet -auto_acc_if_foreign -work work -G TESTCASE=0 -G DATASIZE=8 -G COMMA_POS=0 -G DUV=1 -G NBINPUTS=16
+=1-000ae431a4f1-6641cf34-93672-21f8
+Z4 o-quiet -auto_acc_if_foreign -work work -G TESTCASE=0 -G DATASIZE=8 -G COMMA_POS=0 -G DUV=1 -G NBINPUTS=16
 R2
 n@_opt1
 R3
 R0
-Phtml_report_pkg
-Z4 DPx3 std 6 textio 0 22 zE1`LPoLg^DX3Oz^4Fj1K3
-Z5 DPx4 ieee 14 std_logic_1164 0 22 cVAk:aDinOX8^VGI1ekP<3
-!i122 382
-Z6 w1713958902
+T_opt2
+!s110 1715589543
+VOP4cf9k<KEZHYimX?3M;n0
+R1
+=1-000ae431a4f1-6641d1a6-d8be3-12ac
+R4
+R2
+n@_opt2
+R3
 R0
-Z7 8../src_tb/html_report_pkg.vhd
-Z8 F../src_tb/html_report_pkg.vhd
+Phtml_report_pkg
+Z5 DPx3 std 6 textio 0 22 zE1`LPoLg^DX3Oz^4Fj1K3
+Z6 DPx4 ieee 14 std_logic_1164 0 22 cVAk:aDinOX8^VGI1ekP<3
+!i122 734
+Z7 w1714138449
+R0
+Z8 8../src_tb/html_report_pkg.vhd
+Z9 F../src_tb/html_report_pkg.vhd
 l0
 L39 1
 V6fN4[9MIEoiic45eFE=FK0
 !s100 D[Yc>Elm[_dGPJTNeYoN:3
-Z9 OL;C;2020.1_1;71
+Z10 OL;C;2020.1_1;71
 33
 b1
-Z10 !s110 1715177131
+Z11 !s110 1715590876
 !i10b 1
-Z11 !s108 1715177131.000000
-Z12 !s90 -reportprogress|300|-2008|../src_tb/html_report_pkg.vhd|
-Z13 !s107 ../src_tb/html_report_pkg.vhd|
+Z12 !s108 1715590876.000000
+Z13 !s90 -reportprogress|300|-2008|../src_tb/html_report_pkg.vhd|
+Z14 !s107 ../src_tb/html_report_pkg.vhd|
 !i113 0
-Z14 o-2008
-Z15 tExplicit 1 CvgOpt 0
+Z15 o-2008
+Z16 tExplicit 1 CvgOpt 0
 Bbody
-Z16 DPx4 work 15 html_report_pkg 0 22 6fN4[9MIEoiic45eFE=FK0
-R4
+Z17 DPx4 work 15 html_report_pkg 0 22 6fN4[9MIEoiic45eFE=FK0
 R5
-!i122 382
+R6
+!i122 734
 l0
 L66 1
 V;gZA30K>V;Mmg=nLMGz:f3
 !s100 AVhHk8Y:[]X[96W@VlOoU3
-R9
-33
 R10
-!i10b 1
+33
 R11
+!i10b 1
 R12
 R13
-!i113 0
 R14
+!i113 0
 R15
-Plogger_pkg
 R16
-Z17 DPx4 ieee 11 numeric_std 0 22 aU^R8eGcicLcUFIaBQSL>3
-R4
+Plogger_pkg
+R17
+Z18 DPx4 ieee 11 numeric_std 0 22 aU^R8eGcicLcUFIaBQSL>3
 R5
-!i122 383
 R6
+!i122 735
+R7
 R0
-Z18 8../src_tb/logger_html_pkg.vhd
-Z19 F../src_tb/logger_html_pkg.vhd
+Z19 8../src_tb/logger_html_pkg.vhd
+Z20 F../src_tb/logger_html_pkg.vhd
 l0
 L31 1
 VhboZ5UULLZNTjeaf8VV]K0
 !s100 QN_fD?z9PGW2H:_:2ah=E3
-R9
+R10
 33
 b1
-R10
-!i10b 1
 R11
-Z20 !s90 -reportprogress|300|-2008|../src_tb/logger_html_pkg.vhd|
-Z21 !s107 ../src_tb/logger_html_pkg.vhd|
+!i10b 1
+R12
+Z21 !s90 -reportprogress|300|-2008|../src_tb/logger_html_pkg.vhd|
+Z22 !s107 ../src_tb/logger_html_pkg.vhd|
 !i113 0
-R14
 R15
-Bbody
-Z22 DPx4 work 10 logger_pkg 0 22 hboZ5UULLZNTjeaf8VV]K0
 R16
+Bbody
+Z23 DPx4 work 10 logger_pkg 0 22 hboZ5UULLZNTjeaf8VV]K0
 R17
-R4
+R18
 R5
-!i122 383
+R6
+!i122 735
 l0
 L69 1
 Va;l@P67aGQoFb<2EHC4AY2
 !s100 18>998>1DKj>LPE5zDNYi0
-R9
-33
 R10
-!i10b 1
+33
 R11
-R20
+!i10b 1
+R12
 R21
+R22
 !i113 0
-R14
 R15
+R16
 Eneuron
-Z23 w1715177307
-Z24 DPx4 work 10 neuron_pkg 0 22 S[V[G2IQ_;GSE]j@SM[:53
-R17
-R4
+Z24 w1715590873
+Z25 DPx4 work 10 neuron_pkg 0 22 S[V[G2IQ_;GSE]j@SM[:53
+R18
 R5
-!i122 391
+R6
+!i122 733
 R0
-Z25 8../src_vhdl/neuron_sequential.vhd
-Z26 F../src_vhdl/neuron_sequential.vhd
+Z26 8../src_vhdl/neuron_pipeline.vhd
+Z27 F../src_vhdl/neuron_pipeline.vhd
 l0
 L7 1
 V1]DZL2l8IDK;c<eAbJ7P?1
 !s100 o:T?FFe1_K7JaDI;VCXkz0
-R9
+R10
 33
-Z27 !s110 1715177312
+R11
 !i10b 1
-Z28 !s108 1715177312.000000
-Z29 !s90 -reportprogress|300|-2008|../src_vhdl/neuron_sequential.vhd|
-Z30 !s107 ../src_vhdl/neuron_sequential.vhd|
+R12
+Z28 !s90 -reportprogress|300|-2008|../src_vhdl/neuron_pipeline.vhd|
+Z29 !s107 ../src_vhdl/neuron_pipeline.vhd|
 !i113 0
-R14
 R15
-Acombinational
-R24
-R17
-R4
+R16
+Apipeline
+R25
+R18
 R5
-Z31 DEx4 work 6 neuron 0 22 1]DZL2l8IDK;c<eAbJ7P?1
-!i122 390
-l30
-L28 23
-VMjJWe@M^>1ojn^a34KjNA3
-!s100 X_Mc8<FTUSEJY]<@RgLC80
-R9
+R6
+Z30 DEx4 work 6 neuron 0 22 1]DZL2l8IDK;c<eAbJ7P?1
+!i122 733
+l33
+L29 92
+V[8Da@0m4CYj;QVH9JZE@n0
+!s100 lBKA0okacW98zIQBzNQoJ3
+R10
 33
-R27
+R11
 !i10b 1
+R12
 R28
+R29
+!i113 0
+R15
+R16
+Asequential
+R25
+R18
+R5
+R6
+R30
+!i122 732
+l30
+L28 66
+V@HPW:?H>l[lGbfJfcMMJS0
+!s100 DLz;>dm67;oE_AQDliBP=0
+R10
+33
+R11
+!i10b 1
+Z31 !s108 1715590875.000000
+!s90 -reportprogress|300|-2008|../src_vhdl/neuron_sequential.vhd|
+!s107 ../src_vhdl/neuron_sequential.vhd|
+!i113 0
+R15
+R16
+F../src_vhdl/neuron_sequential.vhd
+w1715588155
+8../src_vhdl/neuron_sequential.vhd
+Acombinational
+R25
+R18
+R5
+R6
+R30
+!i122 731
+l29
+L28 54
+Va3GJ<cF_CHZ8lC213N?7@0
+!s100 F5FkJkniH@2BK3:UZ]ZEU3
+R10
+33
+Z32 !s110 1715590875
+!i10b 1
+R31
 !s90 -reportprogress|300|-2008|../src_vhdl/neuron_combinational.vhd|
 !s107 ../src_vhdl/neuron_combinational.vhd|
 !i113 0
-R14
 R15
-F../src_vhdl/neuron_combinational.vhd
-w1715174558
-8../src_vhdl/neuron_combinational.vhd
-Apipeline
-R24
-R17
-R4
-R5
-R31
-!i122 381
-l30
-L28 5
-V1F8ZET>DWZ;PKg0?lcK]G0
-!s100 PoCfai;0BS;@I1UccnRDz2
-R9
-33
-R10
-!i10b 1
-R11
-!s90 -reportprogress|300|-2008|../src_vhdl/neuron_pipeline.vhd|
-!s107 ../src_vhdl/neuron_pipeline.vhd|
-!i113 0
-R14
-R15
-F../src_vhdl/neuron_pipeline.vhd
-R6
-8../src_vhdl/neuron_pipeline.vhd
-Asequential
-R24
-R17
-R4
-R5
-R31
-!i122 380
-l31
-L28 51
-V6CX4PZE^@ibhQ3^1k@cB23
-!s100 0LfHlV?D0Vfbk4XCKo7hU2
-R9
-33
-R10
-!i10b 1
-R11
-R29
-R30
-!i113 0
-R14
-R15
-Pneuron_bfm_pkg
 R16
-R22
-Z32 DPx4 work 18 project_logger_pkg 0 22 M_fe4Jhnc>LEB5^52G5[_1
-Z33 DPx4 work 13 neuron_tb_pkg 0 22 E3ohU[e7_ah>71XW>_4GC1
-R24
+F../src_vhdl/neuron_combinational.vhd
+w1715589534
+8../src_vhdl/neuron_combinational.vhd
+Pneuron_bfm_pkg
 R17
-R4
+R23
+Z33 DPx4 work 18 project_logger_pkg 0 22 M_fe4Jhnc>LEB5^52G5[_1
+Z34 DPx4 work 13 neuron_tb_pkg 0 22 E3ohU[e7_ah>71XW>_4GC1
+R25
+R18
 R5
-!i122 386
 R6
+!i122 738
+R7
 R0
-Z34 8../src_tb/neuron_bfm_pkg.vhd
-Z35 F../src_tb/neuron_bfm_pkg.vhd
+Z35 8../src_tb/neuron_bfm_pkg.vhd
+Z36 F../src_tb/neuron_bfm_pkg.vhd
 l0
 L11 1
 VAbDk=d7W67<=hQOeV3<U<2
 !s100 @`3oZDlL8BjTe>]5FN<GP1
-R9
+R10
 33
 b1
-R10
-!i10b 1
 R11
-Z36 !s90 -reportprogress|300|-2008|../src_tb/neuron_bfm_pkg.vhd|
-Z37 !s107 ../src_tb/neuron_bfm_pkg.vhd|
+!i10b 1
+R12
+Z37 !s90 -reportprogress|300|-2008|../src_tb/neuron_bfm_pkg.vhd|
+Z38 !s107 ../src_tb/neuron_bfm_pkg.vhd|
 !i113 0
-R14
 R15
-Bbody
-Z38 DPx4 work 14 neuron_bfm_pkg 0 22 AbDk=d7W67<=hQOeV3<U<2
 R16
-R22
-R32
-R33
-R24
+Bbody
+Z39 DPx4 work 14 neuron_bfm_pkg 0 22 AbDk=d7W67<=hQOeV3<U<2
 R17
-R4
+R23
+R33
+R34
+R25
+R18
 R5
-!i122 386
+R6
+!i122 738
 l0
 L34 1
 V?noLzJ@3JZ^QTm:B>dWgR1
 !s100 f15fiEM]?f>0e=f=@VV300
-R9
-33
 R10
-!i10b 1
+33
 R11
-R36
+!i10b 1
+R12
 R37
+R38
 !i113 0
-R14
 R15
+R16
 Pneuron_pkg
-R4
 R5
-!i122 389
 R6
+!i122 730
+R7
 R0
 8../src_vhdl/neuron_pkg.vhd
 F../src_vhdl/neuron_pkg.vhd
@@ -276,81 +285,80 @@ l0
 L4 1
 VS[V[G2IQ_;GSE]j@SM[:53
 !s100 dJk`zCX:CI3U:joK1FQYL3
-R9
+R10
 33
-R27
+R32
 !i10b 1
-R28
+R31
 !s90 -reportprogress|300|-2008|../src_vhdl/neuron_pkg.vhd|
 !s107 ../src_vhdl/neuron_pkg.vhd|
 !i113 0
-R14
 R15
-Eneuron_tb
-R6
-Z39 D^#x5 tlmvm 13 tlmvm_context 0 22 Qm`m7^4HM:F`QiN=_[kF=1
-Z40 DPx5 tlmvm 22 tlm_unbounded_fifo_pkg 0 22 UXl^jMdoYAe_fYSLAI4FZ2
-Z41 DPx5 tlmvm 12 tlm_fifo_pkg 0 22 cYd8n;G<kiT]o2J]ARQZF0
-Z42 DPx5 tlmvm 18 simulation_end_pkg 0 22 d48^9dYOfOF7A2SS@J;QN0
-Z43 DPx5 tlmvm 17 objection_env_pkg 0 22 oKk4<C;akjmY>O>@:E=[>0
-Z44 DPx5 tlmvm 13 objection_pkg 0 22 J2We2A=0JOTb`jC[>2`d62
-Z45 DPx5 tlmvm 17 heartbeat_env_pkg 0 22 8_UZaN7j2]@HCh;K<3FeF1
-Z46 DPx5 tlmvm 13 heartbeat_pkg 0 22 Iz`53<3^O@CjFGTE^RRfg3
-R38
-Z47 D^#x5 osvvm 12 osvvmcontext 0 22 4>[MGY:@[^WI4JLX<N5BB2
-Z48 DPx5 osvvm 13 osvvmtypespkg 0 22 =a_H><aSzdDDmjGkVKIOd0
-Z49 DPx5 osvvm 9 reportpkg 0 22 VY9Q]d?DYzCKo7BDWKA3R3
-Z50 DPx3 std 3 env 0 22 d?`1ck@NdeD@H3RZG7FgZ2
-Z51 DPx5 osvvm 9 tbutilpkg 0 22 UO_T5GMHNcW`YH^0X9>J13
-Z52 DPx5 osvvm 9 resizepkg 0 22 3XIn1]@K7e>H^<@AmQg743
-Z53 DPx5 osvvm 9 memorypkg 0 22 ;=DaKicEGlXQ5l56K;boC3
-Z54 DPx5 osvvm 15 vendorcovapipkg 0 22 27YeblmAl@Z2zezLkH1D62
-Z55 DPx5 osvvm 14 messagelistpkg 0 22 AO2dkJ]W=d^a]KLj^oB_10
-Z56 DPx5 osvvm 18 randomprocedurepkg 0 22 jB[SdQMBAmm2OdP]3?Dj70
-Z57 DPx5 osvvm 11 coveragepkg 0 22 n<AKjA`=BA6Oi3V_6`GcM1
-Z58 DPx4 ieee 20 numeric_std_unsigned 0 22 L9z`>=>LNY9h8oAIomUKm3
-Z59 DPx5 osvvm 9 randompkg 0 22 nbe]f?]P:S]0KmFO:Mk1P3
-Z60 DPx4 ieee 9 math_real 0 22 gNk<PdFJ<XNPcfef`f?Z81
-Z61 DPx5 osvvm 13 randombasepkg 0 22 ZZ0OLLo_mL]l6hhKjz7IL1
-Z62 DPx4 ieee 16 std_logic_textio 0 22 ^l:n6VFdg74Q?CKDhjD]D3
-Z63 DPx5 osvvm 15 sortlistpkg_int 0 22 d3SOSED:eSDCCZ>Z28c^<1
-Z64 DPx5 osvvm 11 textutilpkg 0 22 V6>431LU^efJhoUbcncRg2
-Z65 DPx5 osvvm 13 transcriptpkg 0 22 McLCKG6PSg66ne7jcKU;D2
-Z66 DPx5 osvvm 14 osvvmglobalpkg 0 22 3Y5^==H^HOajO3a_id8dI1
-Z67 DPx5 osvvm 11 alertlogpkg 0 22 n@nOFADM1@TDROVEW2@5<3
-Z68 DPx5 osvvm 13 resolutionpkg 0 22 O<biW>Fk623<H78ZgH20K2
-Z69 DPx5 osvvm 12 namestorepkg 0 22 2_7hH9<lRkQ^Joi2Q^1Gf3
-Z70 DPx5 osvvm 7 namepkg 0 22 @oaHA3kzIgjiZNZfGab@L1
-Z71 DPx4 work 15 test_neuron_pkg 0 22 zzM[_MB89Z^UDEW^W<k=K2
-R33
-R24
 R16
-R22
-R32
+Eneuron_tb
+R7
+Z40 D^#x5 tlmvm 13 tlmvm_context 0 22 Qm`m7^4HM:F`QiN=_[kF=1
+Z41 DPx5 tlmvm 22 tlm_unbounded_fifo_pkg 0 22 UXl^jMdoYAe_fYSLAI4FZ2
+Z42 DPx5 tlmvm 12 tlm_fifo_pkg 0 22 cYd8n;G<kiT]o2J]ARQZF0
+Z43 DPx5 tlmvm 18 simulation_end_pkg 0 22 d48^9dYOfOF7A2SS@J;QN0
+Z44 DPx5 tlmvm 17 objection_env_pkg 0 22 oKk4<C;akjmY>O>@:E=[>0
+Z45 DPx5 tlmvm 13 objection_pkg 0 22 J2We2A=0JOTb`jC[>2`d62
+Z46 DPx5 tlmvm 17 heartbeat_env_pkg 0 22 8_UZaN7j2]@HCh;K<3FeF1
+Z47 DPx5 tlmvm 13 heartbeat_pkg 0 22 Iz`53<3^O@CjFGTE^RRfg3
+R39
+Z48 D^#x5 osvvm 12 osvvmcontext 0 22 4>[MGY:@[^WI4JLX<N5BB2
+Z49 DPx5 osvvm 13 osvvmtypespkg 0 22 =a_H><aSzdDDmjGkVKIOd0
+Z50 DPx5 osvvm 9 reportpkg 0 22 VY9Q]d?DYzCKo7BDWKA3R3
+Z51 DPx3 std 3 env 0 22 d?`1ck@NdeD@H3RZG7FgZ2
+Z52 DPx5 osvvm 9 tbutilpkg 0 22 UO_T5GMHNcW`YH^0X9>J13
+Z53 DPx5 osvvm 9 resizepkg 0 22 3XIn1]@K7e>H^<@AmQg743
+Z54 DPx5 osvvm 9 memorypkg 0 22 ;=DaKicEGlXQ5l56K;boC3
+Z55 DPx5 osvvm 15 vendorcovapipkg 0 22 27YeblmAl@Z2zezLkH1D62
+Z56 DPx5 osvvm 14 messagelistpkg 0 22 AO2dkJ]W=d^a]KLj^oB_10
+Z57 DPx5 osvvm 18 randomprocedurepkg 0 22 jB[SdQMBAmm2OdP]3?Dj70
+Z58 DPx5 osvvm 11 coveragepkg 0 22 n<AKjA`=BA6Oi3V_6`GcM1
+Z59 DPx4 ieee 20 numeric_std_unsigned 0 22 L9z`>=>LNY9h8oAIomUKm3
+Z60 DPx5 osvvm 9 randompkg 0 22 nbe]f?]P:S]0KmFO:Mk1P3
+Z61 DPx4 ieee 9 math_real 0 22 gNk<PdFJ<XNPcfef`f?Z81
+Z62 DPx5 osvvm 13 randombasepkg 0 22 ZZ0OLLo_mL]l6hhKjz7IL1
+Z63 DPx4 ieee 16 std_logic_textio 0 22 ^l:n6VFdg74Q?CKDhjD]D3
+Z64 DPx5 osvvm 15 sortlistpkg_int 0 22 d3SOSED:eSDCCZ>Z28c^<1
+Z65 DPx5 osvvm 11 textutilpkg 0 22 V6>431LU^efJhoUbcncRg2
+Z66 DPx5 osvvm 13 transcriptpkg 0 22 McLCKG6PSg66ne7jcKU;D2
+Z67 DPx5 osvvm 14 osvvmglobalpkg 0 22 3Y5^==H^HOajO3a_id8dI1
+Z68 DPx5 osvvm 11 alertlogpkg 0 22 n@nOFADM1@TDROVEW2@5<3
+Z69 DPx5 osvvm 13 resolutionpkg 0 22 O<biW>Fk623<H78ZgH20K2
+Z70 DPx5 osvvm 12 namestorepkg 0 22 2_7hH9<lRkQ^Joi2Q^1Gf3
+Z71 DPx5 osvvm 7 namepkg 0 22 @oaHA3kzIgjiZNZfGab@L1
+Z72 DPx4 work 15 test_neuron_pkg 0 22 zzM[_MB89Z^UDEW^W<k=K2
+R34
+R25
 R17
-R4
+R23
+R33
+R18
 R5
-!i122 388
+R6
+!i122 740
 R0
-Z72 8../src_tb/neuron_tb.vhd
-Z73 F../src_tb/neuron_tb.vhd
+Z73 8../src_tb/neuron_tb.vhd
+Z74 F../src_tb/neuron_tb.vhd
 l0
 L43 1
 V?DMGjDZ7=znRGb]fMBQ7;0
 !s100 mO7Udemjh;zNzARSaE[VO2
-R9
+R10
 33
-Z74 !s110 1715177132
+R11
 !i10b 1
-Z75 !s108 1715177132.000000
-Z76 !s90 -reportprogress|300|-2008|../src_tb/neuron_tb.vhd|
-Z77 !s107 ../src_tb/neuron_tb.vhd|
+R12
+Z75 !s90 -reportprogress|300|-2008|../src_tb/neuron_tb.vhd|
+Z76 !s107 ../src_tb/neuron_tb.vhd|
 !i113 0
-R14
 R15
+R16
 Atestbench
-R31
-R39
+R30
 R40
 R41
 R42
@@ -358,8 +366,8 @@ R43
 R44
 R45
 R46
-R38
 R47
+R39
 R48
 R49
 R50
@@ -384,84 +392,85 @@ R68
 R69
 R70
 R71
-R33
-R24
-R16
-R22
-R32
+R72
+R34
+R25
 R17
-R4
+R23
+R33
+R18
 R5
+R6
 DEx4 work 9 neuron_tb 0 22 ?DMGjDZ7=znRGb]fMBQ7;0
-!i122 388
+!i122 740
 l109
 L55 231
 VdRo0]]bgo2a8Y@XkFLj2V3
 !s100 Q]Q^EVVQ@SY1LaF1@bmMY3
-R9
+R10
 33
-R74
+!s110 1715590877
 !i10b 1
+R12
 R75
 R76
-R77
 !i113 0
-R14
 R15
+R16
 Pneuron_tb_pkg
-R24
-R17
-R4
+R25
+R18
 R5
-!i122 385
 R6
+!i122 737
+R7
 R0
-Z78 8../src_tb/neuron_tb_pkg.vhd
-Z79 F../src_tb/neuron_tb_pkg.vhd
+Z77 8../src_tb/neuron_tb_pkg.vhd
+Z78 F../src_tb/neuron_tb_pkg.vhd
 l0
 L9 1
 VE3ohU[e7_ah>71XW>_4GC1
 !s100 D;HT^?oN<bDVjmJZ^1??L3
-R9
+R10
 33
 b1
-R10
-!i10b 1
 R11
-Z80 !s90 -reportprogress|300|-2008|../src_tb/neuron_tb_pkg.vhd|
-Z81 !s107 ../src_tb/neuron_tb_pkg.vhd|
+!i10b 1
+R12
+Z79 !s90 -reportprogress|300|-2008|../src_tb/neuron_tb_pkg.vhd|
+Z80 !s107 ../src_tb/neuron_tb_pkg.vhd|
 !i113 0
-R14
 R15
+R16
 Bbody
-R33
-R24
-R17
-R4
+R34
+R25
+R18
 R5
-!i122 385
+R6
+!i122 737
 l0
 L54 1
 V8hB[STMchl2EKzj;zG@b`1
 !s100 UAGCEkJQNKjUAgZF@Nhj[2
-R9
-33
 R10
-!i10b 1
+33
 R11
+!i10b 1
+R12
+R79
 R80
-R81
 !i113 0
-R14
 R15
-Pproject_logger_pkg
 R16
+Pproject_logger_pkg
 R17
-R4
+R18
 R5
-R22
-!i122 384
 R6
+R23
+!i122 736
+R7
 R0
 8../src_tb/project_logger_pkg.vhd
 F../src_tb/project_logger_pkg.vhd
@@ -469,18 +478,17 @@ l0
 L5 1
 VM_fe4Jhnc>LEB5^52G5[_1
 !s100 H6_jc[e5BPBA]o?]Q=@LR0
-R9
-33
 R10
-!i10b 1
+33
 R11
+!i10b 1
+R12
 !s90 -reportprogress|300|-2008|../src_tb/project_logger_pkg.vhd|
 !s107 ../src_tb/project_logger_pkg.vhd|
 !i113 0
-R14
 R15
+R16
 Ptest_neuron_pkg
-R39
 R40
 R41
 R42
@@ -488,13 +496,13 @@ R43
 R44
 R45
 R46
-R38
-R33
-R24
-R16
-R22
-R32
 R47
+R39
+R34
+R25
+R17
+R23
+R33
 R48
 R49
 R50
@@ -518,32 +526,32 @@ R67
 R68
 R69
 R70
-R17
-R4
+R71
+R18
 R5
-!i122 387
 R6
+!i122 739
+R7
 R0
-Z82 8../src_tb/test_neuron_pkg.vhd
-Z83 F../src_tb/test_neuron_pkg.vhd
+Z81 8../src_tb/test_neuron_pkg.vhd
+Z82 F../src_tb/test_neuron_pkg.vhd
 l0
 L25 1
 VzzM[_MB89Z^UDEW^W<k=K2
 !s100 ``c<2oiEO?eb_U6[K<ALN1
-R9
+R10
 33
 b1
-R74
-!i10b 1
 R11
-Z84 !s90 -reportprogress|300|-2008|../src_tb/test_neuron_pkg.vhd|
-Z85 !s107 ../src_tb/test_neuron_pkg.vhd|
+!i10b 1
+R12
+Z83 !s90 -reportprogress|300|-2008|../src_tb/test_neuron_pkg.vhd|
+Z84 !s107 ../src_tb/test_neuron_pkg.vhd|
 !i113 0
-R14
 R15
+R16
 Bbody
-R71
-R39
+R72
 R40
 R41
 R42
@@ -551,13 +559,13 @@ R43
 R44
 R45
 R46
-R38
-R33
-R24
-R16
-R22
-R32
 R47
+R39
+R34
+R25
+R17
+R23
+R33
 R48
 R49
 R50
@@ -581,21 +589,22 @@ R67
 R68
 R69
 R70
-R17
-R4
+R71
+R18
 R5
-!i122 387
+R6
+!i122 739
 l0
 L38 1
 Vg<X4[EQHoidSFSOmKRB2H0
 !s100 DJzdFzQ]5@d=TZag;hC?01
-R9
+R10
 33
-R74
-!i10b 1
 R11
+!i10b 1
+R12
+R83
 R84
-R85
 !i113 0
-R14
 R15
+R16
