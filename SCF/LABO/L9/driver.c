@@ -14,22 +14,29 @@
 #define DEVICE_NAME "de1_io"
 #define CLASS_NAME "de1_io"
 
-#define MAX_REGISTERS 10
+#define BASE_ADDR 0xff200000
+#define IO_MEM_SIZE 0x1000
 
-#define CST_OFFSET 0x0
-#define TEST_REG 0x4
-#define KEYS 0x8 // not used for this program
-#define EDGE_CAP 0xC
-#define SWITCHES 0x10
-#define LED_OFFSET 0x14
-#define LED_SET 0x18 // not used for this program
-#define LED_CLR 0x1C // not used for this program
-#define HEX3_0_OFFSET 0x20
-#define HEX5_4_OFFSET 0x24
+#define CNST 0x0
 
-#define MAX_REGISTERS 10
+#define KERNEL_0_2_OFFSET 0x4
+#define KERNEL_3_5_OFFSET 0x8
+#define KERNEL_6_8_OFFSET 0xC
 
-const uint8_t REG_ARRAY[MAX_REGISTERS] = {CST_OFFSET, TEST_REG, KEYS, EDGE_CAP, SWITCHES, LED_OFFSET, LED_SET, LED_CLR, HEX3_0_OFFSET, HEX5_4_OFFSET};
+#define IMG_OFFSET 0x10
+
+#define RETURN_OFFSET 0x1C
+
+#define READ_WRITE_OFFSET 0x20
+
+#define MAX_REGISTERS 6
+#define MAX_READ_REGISTERS 6
+#define MAX_WRITE_REGISTERS 4
+
+const uint8_t REG_READ_ARRAY[MAX_READ_REGISTERS] = {CNST, KERNEL_0_2_OFFSET, KERNEL_3_5_OFFSET, KERNEL_6_8_OFFSET, RETURN_OFFSET, READ_WRITE_OFFSET};
+
+const uint8_t REG_WRITE_ARRAY[MAX_WRITE_REGISTERS] = {KERNEL_0_2_OFFSET, KERNEL_3_5_OFFSET, KERNEL_6_8_OFFSET,IMG_OFFSET};
+
 #define WR_VALUE _IOW('a', 'a', int32_t *)
 
 static int in_use = 0;
@@ -52,7 +59,10 @@ static ssize_t hello_read(struct file *filep, char __user *buf, size_t count, lo
         // read from mem point + offset to char buffer
         priv_t *priv = (priv_t *)filep->private_data;
         uint32_t value;
-
+        if(priv->reg_index >= MAX_READ_REGISTERS)
+        {
+                return -EINVAL;
+        }
         value = *(uint32_t *)(priv->mem_ptr + (REG_ARRAY[priv->reg_index]));
         if (copy_to_user(buf, &value, count) != 0)
         {
@@ -68,6 +78,10 @@ static ssize_t hello_write(struct file *filep, const char __user *buf, size_t co
         priv_t *priv = (priv_t *)filep->private_data;
 
         uint32_t value;
+        if (priv->reg_index >= MAX_WRITE_REGISTERS)
+        {
+                return -EINVAL;
+        }
 
         if (copy_from_user(&value, buf, count) != 0)
         {
@@ -189,7 +203,7 @@ static int hello_probe(struct platform_device *pdev)
         device_create(priv->class, NULL, priv->dev_num, NULL, DEVICE_NAME);
 
         // Allocate memory for the memory pointer
-        priv->mem_ptr = ioremap(0xff200000, 0x1000);
+        priv->mem_ptr = ioremap(BASE_ADDR, IO_MEM_SIZE);
         if (priv->mem_ptr == NULL)
         {
                 err = -EINVAL;
