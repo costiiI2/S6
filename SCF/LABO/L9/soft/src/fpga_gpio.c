@@ -31,7 +31,7 @@ int __auto_semihosting;
 
 #define DRIVER_AVAILABLE 0
 
-#define DEBUG_PRINT 1
+#define DEBUG_PRINT 0
 
 #if DRIVER_AVAILABLE
 #include <sys/ioctl.h>
@@ -182,9 +182,9 @@ int image[IMG_SIZE][IMG_SIZE] = {
 int can_read()
 {
     uint8_t size_out = read_register(0x18) >> 24 & 0xFF;
-    #if DEBUG_PRINT
+#if DEBUG_PRINT
     printf("size_out %d\n", size_out);
-    #endif
+#endif
     return size_out;
 }
 
@@ -293,8 +293,10 @@ void convolute_test()
         }
     }
 
+#if DEBUG_PRINT
     printf(" J read %d - I read %d\n", j_read, i_read);
     printf("can_read %d\n", can_read());
+#endif
 
     for (int i = 0; i < IMG_SIZE; i++)
     {
@@ -331,7 +333,7 @@ void test_fifo()
 struct img_1D_t *convolution_1D(struct img_1D_t *img)
 {
     struct img_1D_t *result_img;
-    int i, j, k;
+    int i, j;
     int width = img->width;
     int height = img->height;
     int components = img->components;
@@ -366,9 +368,9 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
         // Start convolution
         int i_read = 1;
         int j_read = 1;
-        for (j = 1; j < img->height - 1;j++)
+        for (j = 1; j < img->height - 1; j++)
         {
-            for (i = 1; i < img->width - 1;i++)
+            for (i = 1; i < img->width - 1; i++)
             {
                 uint8_t pixels[9] = {0};
                 int pixel_count = 0;
@@ -409,20 +411,20 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
                             break;
                         }
                     }
+                }
 
-                    if (can_read())
-                    {
+                if (can_read())
+                {
 
-                        int result = read_register(RETURN_OFFSET);
+                    int result = read_register(RETURN_OFFSET);
 #if DEBUG_PRINT
-                        printf("Read %d %d = %d  \n", j_read, i_read, result);
+                    printf("Read %d %d = %d  \n", j_read, i_read, result);
 #endif
-                        (*result_channels[c])[j_read * img->width + i_read++] = result;
-                        if (i_read == IMG_SIZE - 1)
-                        {
-                            i_read = 1;
-                            j_read++;
-                        }
+                    (*result_channels[c])[j_read * img->width + i_read++] = result;
+                    if (i_read == img->width - 1)
+                    {
+                        i_read = 1;
+                        j_read++;
                     }
                 }
             }
@@ -431,15 +433,17 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
         // Wait for all data to be read
         while (can_read())
         {
-            
-                int result = read_register(RETURN_OFFSET);
-                printf("Reading data at %d %d = %d after \n", i_read, j_read, result);
-                (*result_channels[c])[j_read * img->width + i_read++] = result;
-                if (i_read == img->width - 1)
-                {
-                    i_read = 1;
-                    j_read++;
-                }
+
+            int result = read_register(RETURN_OFFSET);
+#if DEBUG_PRINT
+            printf("Reading data at %d %d = %d after \n", i_read, j_read, result);
+#endif
+            (*result_channels[c])[j_read * img->width + i_read++] = result;
+            if (i_read == img->width - 1)
+            {
+                i_read = 1;
+                j_read++;
+            }
         }
     }
 
@@ -553,13 +557,16 @@ int main(int argc, char **argv)
     }
     switch (argc)
     {
+    case 1:
+        printf("\nFifo test\n");
+        test_fifo();
+        break;
     case 2:
         select_kernel(atoi(argv[1]));
         set_kernel();
         printf("Test mode\n");
         convolute_test();
-        printf("\nFifo test\n");
-        test_fifo();
+
         break;
     case 4:
         select_kernel(atoi(argv[1]));
@@ -573,8 +580,6 @@ int main(int argc, char **argv)
         close(fd);
         return EXIT_FAILURE;
     }
-
-    read_kernel();
 
 #if DRIVER_AVAILABLE == 0
     munmap(base, MAP_SIZE);
