@@ -233,16 +233,7 @@ architecture top of DE1_SoC_top is
             hps_io_0_hps_io_gpio_inst_GPIO54  : inout std_logic                     := 'X';             -- hps_io_gpio_inst_GPIO54
     
             -- LED
-            hps_io_0_hps_io_gpio_inst_GPIO53  : inout std_logic                     := 'X' ;             -- hps_io_gpio_inst_GPIO53
-				
-			axi_slave_input_reg_a_i          : in    std_logic_vector(31 downto 0) := (others => 'X'); -- input_reg_a_i
-			axi_slave_input_reg_b_i          : in    std_logic_vector(31 downto 0) := (others => 'X'); -- input_reg_b_i
-			axi_slave_output_reg_a_o         : out   std_logic_vector(31 downto 0);                    -- output_reg_a_o
-			axi_slave_output_reg_c_o         : out   std_logic_vector(31 downto 0);                    -- output_reg_c_o
-			axi_slave_output_reg_b_o         : out   std_logic_vector(31 downto 0);                    -- output_reg_b_o
-				-- Clock
-				clk_clk                             : in    std_logic                     := 'X'      -- clk
-			
+            hps_io_0_hps_io_gpio_inst_GPIO53  : inout std_logic                     := 'X'              -- hps_io_gpio_inst_GPIO53
         );
     end component qsys_system;
 
@@ -251,9 +242,6 @@ begin
 ---------------------------------------------------------
 --  HPS mapping
 ---------------------------------------------------------
-    
-
-
 
     System : component qsys_system
     port map (
@@ -284,28 +272,11 @@ begin
         memory_mem_dm       => HPS_DDR3_DM_o,
         memory_oct_rzqin    => HPS_DDR3_RZQ_i,
     
-		-- Pushbutton
-		hps_io_0_hps_io_gpio_inst_GPIO54  => HPS_KEY_io,
-
-		-- LED
-		hps_io_0_hps_io_gpio_inst_GPIO53  => HPS_LED_io,
-		
-		-- DE1_I/O
-		axi_slave_input_reg_a_i(3 downto 0)    	=> KEY_i,
-		axi_slave_input_reg_b_i(9 downto 0)   => SW_i,
-        axi_slave_output_reg_a_o(9 downto 0) => LEDR_o,
-        axi_slave_output_reg_b_o(6 downto 0) => HEX0_o,
-        axi_slave_output_reg_b_o(13 downto 7) => HEX1_o,
-        axi_slave_output_reg_b_o(20 downto 14) => HEX2_o,
-        axi_slave_output_reg_b_o(27 downto 21) => HEX3_o,
-        axi_slave_output_reg_c_o(6 downto 0) => HEX4_o,
-        axi_slave_output_reg_c_o(13 downto 7) => HEX5_o,
-	  
-
-		-- Clock
-		clk_clk                           	=> CLOCK_50_i
+        -- Pushbutton
+        hps_io_0_hps_io_gpio_inst_GPIO54  => HPS_KEY_io,
+    
+        -- LED
+        hps_io_0_hps_io_gpio_inst_GPIO53  => HPS_LED_io
     );
-	 
-	 
 
 end top;

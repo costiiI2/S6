@@ -115,16 +115,19 @@ architecture rtl of axi4lite_slave is
 
     -- FIFO's
     COMPONENT fifo
-        PORT (
-            clock    : IN STD_LOGIC;
-            data     : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
-            rdreq    : IN STD_LOGIC;
-            wrreq    : IN STD_LOGIC;
-            empty    : OUT STD_LOGIC;
-            full     : OUT STD_LOGIC;
-            q        : OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
-        );
-    END COMPONENT;
+    PORT (
+        aclr	: IN STD_LOGIC ;
+        clock	: IN STD_LOGIC ;
+        data	: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+        rdreq	: IN STD_LOGIC ;
+        wrreq	: IN STD_LOGIC ;
+        empty	: OUT STD_LOGIC ;
+        full	: OUT STD_LOGIC ;
+        q	: OUT STD_LOGIC_VECTOR (31 DOWNTO 0);
+        usedw	: OUT STD_LOGIC_VECTOR (7 DOWNTO 0)
+);
+END COMPONENT;
+
     
     --img fifo
     signal img_fifo_data_in    : std_logic_vector(31 downto 0);
@@ -133,7 +136,7 @@ architecture rtl of axi4lite_slave is
     signal img_fifo_data_out   : std_logic_vector(31 downto 0);
     signal img_fifo_full       : std_logic;
     signal img_fifo_empty      : std_logic;
-
+    signal img_size : std_logic_vector(7 downto 0);
     -- convolution fifo
     signal process_fifo_data_in    : std_logic_vector(31 downto 0);
     signal process_fifo_write_en   : std_logic;
@@ -142,6 +145,7 @@ architecture rtl of axi4lite_slave is
     signal process_fifo_full       : std_logic;
     signal process_fifo_empty      : std_logic;
     signal comp_head : integer := 0;
+    signal process_size : std_logic_vector(7 downto 0);
 
     -- output fifo
     signal out_fifo_data_in    : std_logic_vector(31 downto 0);
@@ -152,6 +156,16 @@ architecture rtl of axi4lite_slave is
     signal out_fifo_empty      : std_logic;
     signal out_head : integer := 0;
     signal out_data_s : std_logic_vector(31 downto 0);
+    signal out_size : std_logic_vector(7 downto 0);
+
+    --test_fifo 
+    signal test_fifo_data_in    : std_logic_vector(31 downto 0);
+    signal test_fifo_write_en   : std_logic;
+    signal test_fifo_read_en    : std_logic;
+    signal test_fifo_data_out   : std_logic_vector(31 downto 0);
+    signal test_fifo_full       : std_logic;
+    signal test_fifo_empty      : std_logic;
+    signal test_size : std_logic_vector(7 downto 0);
 
 
 
@@ -165,39 +179,60 @@ begin
 
     img_fifo : fifo
         port map (
+            aclr     => reset_s,
             clock    => clk_i,
             data     => img_fifo_data_in,
             rdreq    => img_fifo_read_en,
             wrreq    => img_fifo_write_en,
             empty    => img_fifo_empty,
             full     => img_fifo_full,
-            q        => img_fifo_data_out
+            q        => img_fifo_data_out,
+            usedw    => img_size
         );
 
     -- FIFO for the image convolution result
     process_fifo : fifo
         port map (
+            aclr     => reset_s,
             clock    => clk_i,
             data     => process_fifo_data_in,
             rdreq    => process_fifo_read_en,
             wrreq    => process_fifo_write_en,
             empty    => process_fifo_empty,
             full     => process_fifo_full,
-            q        => process_fifo_data_out
+            q        => process_fifo_data_out,
+            usedw    => process_size
         );
 
     -- FIFO for the output
     out_fifo : fifo
         port map (
+            aclr     => reset_s,
             clock    => clk_i,
             data     => out_fifo_data_in,
             rdreq    => out_fifo_read_en,
             wrreq    => out_fifo_write_en,
             empty    => out_fifo_empty,
             full     => out_fifo_full,
-            q        => out_fifo_data_out
+            q        => out_fifo_data_out,
+            usedw    => out_size
+
         );
 
+    -- FIFO for the test
+    test_fifo : fifo
+        port map (
+            aclr     => reset_s,
+            clock    => clk_i,
+            data     => test_fifo_data_in,
+            rdreq    => test_fifo_read_en,
+            wrreq    => test_fifo_write_en,
+            empty    => test_fifo_empty,
+            full     => test_fifo_full,
+            q        => test_fifo_data_out,
+            usedw    => test_size
+        );
+        
     reset_s  <= reset_i;
   
 -----------------------------------------------------------
@@ -290,12 +325,11 @@ begin
             kern_reg_4_7_s <= (others => '0');
             kern_reg_8_s   <= (others => '0');
             axi_write_done_s <= '1';
-            img_fifo_data_in <= (others => '0');
-            img_fifo_write_en <= '0';
 
         elsif rising_edge(clk_i) then
             axi_write_done_s <= '0';
             img_fifo_write_en <= '0';
+            test_fifo_write_en <= '0';
 
             ---------------------------------------------------------------------
             if axi_data_wren_s = '1' then
@@ -326,6 +360,9 @@ begin
                         img_fifo_data_in <= axi_wdata_i;
                         img_fifo_write_en <= '1';
                     --------------------------------------------------------------------
+                    when 5 =>
+                        test_fifo_data_in <= axi_wdata_i;
+                        test_fifo_write_en <= '1';
                     when others => null;
                 end case;
             end if;
@@ -432,58 +469,46 @@ begin
     -- and the slave is ready to accept the read address.
     axi_data_rden_s <= axi_raddr_done_s and (not axi_rvalid_s);
 
-    process (axi_araddr_mem_s,
-            kern_reg_0_3_s,
-            kern_reg_4_7_s,
-            kern_reg_8_s,
-            out_fifo_data_out,
-            out_fifo_empty,
-            img_fifo_full
-       )
-        --number address to access
-        variable int_raddr_v  : natural;
-    begin
-        int_raddr_v   := to_integer(unsigned(axi_araddr_mem_s));
-        axi_rdata_s <= x"A5A5A5A5"; --default value
-        out_fifo_read_en <= '0';
-        case int_raddr_v is
-            when 0 =>
-                axi_rdata_s <= CST_ADDR_0_FOR_TST;
-            when 1 =>
-                axi_rdata_s <= kern_reg_0_3_s;
-            when 2 =>
-                axi_rdata_s <= kern_reg_4_7_s;
-            when 3 =>
-                axi_rdata_s <= kern_reg_8_s;
-            when 7 => 
-                axi_rdata_s <= out_fifo_data_out;
-                out_fifo_read_en <= '1';
-            when 8 =>
-                -- read / write
-                axi_rdata_s <= (others => '0');
-                axi_rdata_s(0) <= not img_fifo_full;
-                axi_rdata_s(1) <= not out_fifo_empty;
-
-                axi_rdata_s(2) <= process_fifo_full;
-                axi_rdata_s(3) <= process_fifo_empty;
-                axi_rdata_s(4) <= out_fifo_full;
-                axi_rdata_s(5) <= img_fifo_empty;
-            when others =>
-                axi_rdata_s <= x"A5A5A5A5";
-        end case;
-    end process;
-
     process (reset_s, clk_i)
+        variable int_raddr_v  : natural;
     begin
         if reset_s = '1' then
             axi_rdata_o <= (others => '0');
         elsif rising_edge(clk_i) then
+            out_fifo_read_en <= '0';
+            test_fifo_read_en <= '0';
+            int_raddr_v   := to_integer(unsigned(axi_araddr_mem_s));
             if axi_data_rden_s = '1' then
-                -- When there is a valid read address (S_AXI_ARVALID) with
-                -- acceptance of read address by the slave (axi_arready),
-                -- output the read dada
-                -- Read address mux
-                axi_rdata_o <= axi_rdata_s;
+                case int_raddr_v is
+                    when 0 =>
+                        axi_rdata_o <= CST_ADDR_0_FOR_TST;
+                    when 1 =>
+                        axi_rdata_o <= kern_reg_0_3_s;
+                    when 2 =>
+                        axi_rdata_o <= kern_reg_4_7_s;
+                    when 3 =>
+                        axi_rdata_o <= kern_reg_8_s;
+                    when 5 =>
+                        axi_rdata_o <= test_fifo_data_out;
+                        test_fifo_read_en <= '1';
+                    when 6 =>
+                        axi_rdata_o(7 downto 0) <= test_size;
+                    when 7 => 
+                        axi_rdata_o <= out_fifo_data_out;
+                        out_fifo_read_en <= '1';
+                    when 8 =>
+                        -- read / write
+                        axi_rdata_o <= (others => '0');
+                        axi_rdata_o(0) <= not img_fifo_full;
+                        axi_rdata_o(1) <= not out_fifo_empty;
+
+                        axi_rdata_o(2) <= process_fifo_full;
+                        axi_rdata_o(3) <= process_fifo_empty;
+                        axi_rdata_o(4) <= out_fifo_full;
+                        axi_rdata_o(5) <= img_fifo_empty;
+                    when others =>
+                        axi_rdata_o <= x"A5A5A5A5";
+                end case;
             end if;
         end if;
     end process;
@@ -504,7 +529,6 @@ begin
         -- process the data
         img_fifo_read_en <= '0';
         process_fifo_write_en <= '0';
-        process_fifo_data_in <= (others => '0');
         if img_fifo_empty = '0' and process_fifo_full = '0' then
                     -- read the first element of the fifo
 

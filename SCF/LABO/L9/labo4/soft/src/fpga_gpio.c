@@ -35,7 +35,8 @@ int __auto_semihosting;
 
 #define DRIVER_NAME "/dev/de1_io"
 #define WR_VALUE _IOW('a', 'a', int32_t *)
-
+#else
+static void *base;
 #endif
 
 #define MAP_SIZE 4096UL
@@ -71,7 +72,6 @@ int __auto_semihosting;
 #define COMPONENT_GRAYSCALE 1
 
 static int fd;
-
 void write_register(uint32_t index, uint32_t value)
 {
 
@@ -93,25 +93,9 @@ void write_register(uint32_t index, uint32_t value)
         error = 1;
     }
 #else
-    size_t length = _SC_PAGE_SIZE,
-           mapped_length;
-    off_t offset = AXI_LW_HPS_FPGA_BASE_ADD,
-          pge_offset;
-
-    /* mmap()'s offset must be page aligned */
-    pge_offset = offset & ~(sysconf(_SC_PAGE_SIZE) - 1);
-
-    /* Real length considers the offset and lower page difference */
-    mapped_length = length + offset - pge_offset;
-
-    void *base = mmap(NULL, mapped_length,
-                      PROT_READ | PROT_WRITE,
-                      MAP_SHARED, fd, pge_offset);
-
+    
     volatile uint32_t *reg = base + index;
     *reg = value;
-
-    munmap(base, MAP_SIZE);
 #endif
 }
 
@@ -141,27 +125,8 @@ uint32_t read_register(uint32_t index)
     return value;
 
 #else
-
-    size_t length = _SC_PAGE_SIZE,
-           mapped_length;
-    off_t offset = AXI_LW_HPS_FPGA_BASE_ADD,
-          pge_offset;
-
-    /* mmap()'s offset must be page aligned */
-    pge_offset = offset & ~(sysconf(_SC_PAGE_SIZE) - 1);
-
-    /* Real length considers the offset and lower page difference */
-    mapped_length = length + offset - pge_offset;
-
-    void *base = mmap(NULL, mapped_length,
-                      PROT_READ | PROT_WRITE,
-                      MAP_SHARED, fd, pge_offset);
-
     volatile uint32_t *reg = base + index;
     uint32_t value = *reg;
-
-    munmap(base, MAP_SIZE);
-
     return value;
 #endif
 }
@@ -187,9 +152,9 @@ int convolved_image[IMG_SIZE][IMG_SIZE] = {
     {0, 0, 0, 0, 0}};
 
 const uint8_t kernel[KERNEL_HEIGHT][KERNEL_WIDTH] = {
-    {1, 2, 1},
-    {2, 4, 2},
-    {1, 2, 1}};
+    {0, 0, 0},
+    {0,1,0},
+    {0,0,0}};
 
 int can_read()
 {
@@ -208,6 +173,8 @@ int can_write()
 
 void convolute_test()
 {
+
+
     int timeout = 10;
     int img[IMG_SIZE][IMG_SIZE] = {0};
     int i_read = 1;
@@ -243,9 +210,16 @@ void convolute_test()
                     }
 #if DEBUG_PRINT
                     printf("%d %d %d\n", (pixel_data >> 24) & 0xFF, (pixel_data >> 16) & 0xFF, (pixel_data >> 8) & 0xFF);
+                    if(k==9){
+                        printf("-----\n");
+                    }
 #endif
+
                     pixel_count = 0; // Reset the count for the next batch
                     write_register(IMG_OFFSET, pixel_data);
+                    if(k==9){
+                        break;
+                    }
                 }
             }
 
@@ -299,6 +273,25 @@ void convolute_test()
         printf("\n");
     }
     can_read();
+
+    for (int i = 0; i < IMG_SIZE; i++)
+    {
+        printf("Writing %x\n", i);
+       write_register(0x14, i);
+       printf("size %x\n",
+        read_register(0x18));
+    }
+    printf("----------------\n");
+      printf("size %x\n",
+        read_register(0x18));
+        printf("----------------\n");
+    for (int i = 0; i < IMG_SIZE; i++)
+    {
+        printf("Reading %x\n",
+        read_register(0x14));
+        printf("size %x\n",
+        read_register(0x18));
+    }
 }
 
 struct img_1D_t *convolution_1D(struct img_1D_t *img)
@@ -482,6 +475,23 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+#if DRIVER_AVAILABLE == 0
+size_t length = _SC_PAGE_SIZE,
+           mapped_length;
+    off_t offset = AXI_LW_HPS_FPGA_BASE_ADD,
+          pge_offset;
+
+    /* mmap()'s offset must be page aligned */
+    pge_offset = offset & ~(sysconf(_SC_PAGE_SIZE) - 1);
+
+    /* Real length considers the offset and lower page difference */
+    mapped_length = length + offset - pge_offset;
+
+   base = mmap(NULL, mapped_length,
+                      PROT_READ | PROT_WRITE,
+                      MAP_SHARED, fd, pge_offset);
+#endif
+
     if (setup() < 0)
     {
         return EXIT_FAILURE;
@@ -504,6 +514,9 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+#if DRIVER_AVAILABLE==0
+    munmap(base, MAP_SIZE);
+#endif
     close(fd);
     return EXIT_SUCCESS;
 }

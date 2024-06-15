@@ -18,7 +18,7 @@
 #
 # Quartus Prime
 # Version 18.1.0 Build 625 09/12/2018 SJ Standard Edition
-# Date created = 15:12:43  March 27, 2024
+# Date created = 15:10:35  February 21, 2024
 #
 # -------------------------------------------------------------------------- #
 #
@@ -40,20 +40,20 @@ set_global_assignment -name FAMILY "Cyclone V"
 set_global_assignment -name DEVICE 5CSEMA5F31C6
 set_global_assignment -name TOP_LEVEL_ENTITY DE1_SoC_top
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 18.1.0
-set_global_assignment -name PROJECT_CREATION_TIME_DATE "15:12:43  MARCH 27, 2024"
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "15:10:35  FEBRUARY 21, 2024"
 set_global_assignment -name LAST_QUARTUS_VERSION "18.1.0 Standard Edition"
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
 set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 256
+set_global_assignment -name SDC_FILE DE1_SoC.sdc
+set_global_assignment -name VHDL_FILE ../src/DE1_SoC_top.vhd
+set_global_assignment -name QSYS_FILE qsys_system.qsys
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
-set_global_assignment -name QIP_FILE qsys_system/synthesis/qsys_system.qip
-set_global_assignment -name SDC_FILE DE1_SoC.sdc
-set_global_assignment -name VHDL_FILE ../src/DE1_SoC_top.vhd
 set_location_assignment PIN_AJ4 -to ADC_CS_N_o
 set_location_assignment PIN_AK4 -to ADC_DIN_o
 set_location_assignment PIN_AK3 -to ADC_DOUT_i
