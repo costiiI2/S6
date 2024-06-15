@@ -21,7 +21,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 #include "axi_lw.h"
 #include "image.h"
 
@@ -76,7 +76,7 @@ static int fd;
 #define KERNEL_HEIGHT 3
 #define KERNEL_WIDTH 3
 
-static  uint8_t kernel[KERNEL_HEIGHT][KERNEL_WIDTH];
+static uint8_t kernel[KERNEL_HEIGHT][KERNEL_WIDTH];
 
 const uint8_t kernels[KERNEL_COUNT][KERNEL_HEIGHT][KERNEL_WIDTH] = {
     /* Identity 0*/
@@ -103,9 +103,7 @@ const uint8_t kernels[KERNEL_COUNT][KERNEL_HEIGHT][KERNEL_WIDTH] = {
     {
         {1, 2, 1},
         {2, 4, 2},
-        {1, 2, 1}
-        }
-};
+        {1, 2, 1}}};
 
 void write_register(uint32_t index, uint32_t value)
 {
@@ -179,29 +177,19 @@ int image[IMG_SIZE][IMG_SIZE] = {
     {0, 1, 1, 1, 0},
     {0, 0, 0, 0, 0}};
 
-int convolved_image[IMG_SIZE][IMG_SIZE] = {
-    {0, 0, 0, 0, 0},
-    {0, 8, 9, 8, 0},
-    {0, 9, 7, 9, 0},
-    {0, 8, 9, 8, 0},
-    {0, 0, 0, 0, 0}};
-
 int can_read()
 {
-    uint32_t reg = read_register(READ_WRITE_OFFSET);
     uint8_t size_out = read_register(0x18) >> 24 & 0xFF;
     printf("size_out %d\n", size_out);
-    return size_out > 0;
-
+    return size_out;
 }
 
 int can_write()
 {
-    
     return read_register(READ_WRITE_OFFSET) & WRITE_BIT;
 }
 
-#include <string.h> 
+#include <string.h>
 void select_kernel(uint8_t kernel_index)
 {
     if (kernel_index >= KERNEL_COUNT)
@@ -219,7 +207,6 @@ void convolute_test()
     int img[IMG_SIZE][IMG_SIZE] = {0};
     int i_read = 1;
     int j_read = 1;
-    can_read();
     for (int i = 1; i < (IMG_SIZE - 1); i++)
     {
         for (int j = 1; j < (IMG_SIZE - 1); j++)
@@ -263,27 +250,30 @@ void convolute_test()
                         break;
                     }
                 }
-            }
 
-            if (can_read())
-            {
-                int result = read_register(RETURN_OFFSET);
-#if DEBUG_PRINT
-                printf("Read %d %d = %d  \n", j_read, i_read, result);
-#endif
-                img[j_read][i_read++] = result;
-                if (i_read == IMG_SIZE - 1)
+                while (can_read())
                 {
-                    i_read = 1;
-                    j_read++;
+
+                    int result = read_register(RETURN_OFFSET);
+#if DEBUG_PRINT
+                    printf("Read %d %d = %d  \n", j_read, i_read, result);
+#endif
+                    img[j_read][i_read++] = result;
+                    if (i_read == IMG_SIZE - 1)
+                    {
+                        i_read = 1;
+                        j_read++;
+                    }
                 }
             }
         }
     }
 
+    printf("sizes %d\n", read_register(0x18) >> 8 & 0xFF);
+
     printf("starting last read\n");
 
-    while (can_read() )
+    while (can_read())
     {
 
         int result = read_register(RETURN_OFFSET);
@@ -373,33 +363,63 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
         int j_read = 1;
         for (j = 1; j < img->height - 1;)
         {
-            printf("Convoluting line %d\n", j);
             for (i = 1; i < img->width - 1;)
             {
-                // Load all 9 pixels to IP
-                for (k = 0; k < 9;)
+                uint8_t pixels[9] = {0};
+            int pixel_count = 0;
+            int matrix_count = 0;
+            int a = 0;
+            for (int k = 0; 1;)
+            {
+                if (pixel_count < 3 || k == 9)
                 {
-                    // If a write is ready, store a pixel else loop
-                    if (can_write())
+                    int tmp_i = i + (k / 3 - 1);
+                    int tmp_j = j + (k % 3 - 1);
+                    pixels[k] = image[tmp_j][tmp_i];
+                    pixel_count++;
+                    matrix_count++;
+                    k++;
+                }
+
+                if (can_write() && (pixel_count >= 3 || k == 9))
+                {
+                    // If we have 4 or more pixels, or we have collected all 9 pixels, send them
+                    uint32_t pixel_data = 0;
+                    for (int p = 0; p < pixel_count; p++)
                     {
-                        printf(".");
-                        write_register(IMG_OFFSET, (uint32_t) & (*channels[c])[(j + (k / 3 - 1)) * img->width + (i + (k % 3 - 1))]);
-                        k++;
+                        pixel_data |= pixels[a++] << (24 - (8 * p));
+                    }
+#if DEBUG_PRINT
+                    printf("%d %d %d\n", (pixel_data >> 24) & 0xFF, (pixel_data >> 16) & 0xFF, (pixel_data >> 8) & 0xFF);
+                    if (k == 9)
+                    {
+                        printf("-----\n");
+                    }
+#endif
+
+                    pixel_count = 0; // Reset the count for the next batch
+                    write_register(IMG_OFFSET, pixel_data);
+                    if (k == 9)
+                    {
+                        break;
                     }
                 }
 
-                // If a result is ready, store it else continue
                 if (can_read())
                 {
+
                     int result = read_register(RETURN_OFFSET);
-                    printf("Reading data at %d %d = %d before \n", i_read, j_read, result);
+#if DEBUG_PRINT
+                    printf("Read %d %d = %d  \n", j_read, i_read, result);
+#endif
                     (*result_channels[c])[j_read * img->width + i_read++] = result;
-                    if (i_read == img->width - 1)
+                    if (i_read == IMG_SIZE - 1)
                     {
                         i_read = 1;
                         j_read++;
                     }
                 }
+            }
                 i++;
             }
             j++;
@@ -530,7 +550,7 @@ int main(int argc, char **argv)
     }
 
     printf("Setting kernel\n");
-    select_kernel(0);
+    select_kernel(4);
     set_kernel();
 
     // read kernel values
