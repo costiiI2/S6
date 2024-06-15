@@ -80,30 +80,34 @@ static int fd;
 static const uint8_t kernel[KERNEL_HEIGHT][KERNEL_WIDTH];
 
 const uint8_t kernels[KERNEL_COUNT][KERNEL_HEIGHT][KERNEL_WIDTH] = {
-    /* Identity */
+    /* Identity 0*/
     {
         {0, 0, 0},
         {0, 1, 0},
         {0, 0, 0}
     },
-    /* Edge detection */
+    /* Edge detection 1*/
     {
         {0, 1, 0},
         {1, -4, 1},
         {0, 1, 0}
     },
-    /* Sharpen */
+    /* Sharpen 2*/
     {
         {0, -1, 0},
         {-1, 5, -1},
         {0, -1, 0}
     },
-    /* Box blur */
+    /* Box blur 3*/
     {
         {1, 1, 1},
         {1, 1, 1},
         {1, 1, 1}
-    }
+    },
+    /* Gaussian blur 4*/
+    {1, 2, 1},
+    {2, 4, 2},
+    {1, 2, 1}
 };
 
 void write_register(uint32_t index, uint32_t value)
