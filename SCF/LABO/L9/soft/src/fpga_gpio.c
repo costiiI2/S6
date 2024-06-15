@@ -21,6 +21,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <stdlib.h> 
 #include "axi_lw.h"
 #include "image.h"
 
@@ -71,11 +72,11 @@ static int fd;
 #define COMPONENT_RGB 3
 #define COMPONENT_GRAYSCALE 1
 
-#define KERNEL_COUNT 4
+#define KERNEL_COUNT 5
 #define KERNEL_HEIGHT 3
 #define KERNEL_WIDTH 3
 
-static const uint8_t kernel[KERNEL_HEIGHT][KERNEL_WIDTH];
+static  uint8_t kernel[KERNEL_HEIGHT][KERNEL_WIDTH];
 
 const uint8_t kernels[KERNEL_COUNT][KERNEL_HEIGHT][KERNEL_WIDTH] = {
     /* Identity 0*/
@@ -188,18 +189,19 @@ int convolved_image[IMG_SIZE][IMG_SIZE] = {
 int can_read()
 {
     uint32_t reg = read_register(READ_WRITE_OFFSET);
-#if DEBUG_PRINT
-    printf("img_full: %d, out_empty: %d, process_full: %d, process_empty: %d, out_full: %d, img_empty: %d\n",
-           !(reg >> 0 & 0x1), !(reg >> 1 & 0x1), reg >> 2 & 0x1, reg >> 3 & 0x1, reg >> 4 & 0x1, reg >> 5 & 0x1);
-#endif
-    return read_register(READ_WRITE_OFFSET) & READ_BIT;
+    uint8_t size_out = read_register(0x18) >> 24 & 0xFF;
+    printf("size_out %d\n", size_out);
+    return size_out > 0;
+
 }
 
 int can_write()
 {
+    
     return read_register(READ_WRITE_OFFSET) & WRITE_BIT;
 }
 
+#include <string.h> 
 void select_kernel(uint8_t kernel_index)
 {
     if (kernel_index >= KERNEL_COUNT)
@@ -208,13 +210,12 @@ void select_kernel(uint8_t kernel_index)
         return;
     }
 
-    kernel = kernels[kernel_index];
+    memcpy(kernel, kernels[kernel_index], sizeof(kernel));
 }
 
 void convolute_test()
 {
 
-    int timeout = 10;
     int img[IMG_SIZE][IMG_SIZE] = {0};
     int i_read = 1;
     int j_read = 1;
@@ -280,7 +281,9 @@ void convolute_test()
         }
     }
 
-    while (can_read() && timeout > 0 && (j_read < IMG_SIZE - 1))
+    printf("starting last read\n");
+
+    while (can_read() )
     {
 
         int result = read_register(RETURN_OFFSET);
@@ -293,8 +296,10 @@ void convolute_test()
             i_read = 1;
             j_read++;
         }
-        timeout--;
     }
+
+    printf(" J read %d - I read %d\n", j_read, i_read);
+    printf("can_read %d\n", can_read());
 
     for (int i = 0; i < IMG_SIZE; i++)
     {
@@ -304,7 +309,6 @@ void convolute_test()
         }
         printf("\n");
     }
-    can_read();
 }
 
 void test_fifo()
@@ -526,7 +530,7 @@ int main(int argc, char **argv)
     }
 
     printf("Setting kernel\n");
-    select_kernel(argv[1]);
+    select_kernel(0);
     set_kernel();
 
     // read kernel values
