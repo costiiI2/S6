@@ -518,6 +518,7 @@ begin
 
 -- convolution computation
 PROCESSING_FIFO : process(clk_i, reset_s)
+    variable temp_result : signed(15 downto 0) := (others => '0');
 begin
     if reset_s = '1' then
         comp_head <= 0;
@@ -529,81 +530,44 @@ begin
         -- if there is data in the img fifo and the process fifo is not ful
         -- process the data
         img_fifo_read_en <= '0';
-        process_fifo_write_en <= '0';
+        out_fifo_write_en <= '0';
         process_fifo_data_in <= (others => '0');
         if img_fifo_empty = '0' and process_fifo_full = '0' then
                     -- read the first element of the fifo
-            if comp_head = 0 then
-                process_fifo_data_in <= std_logic_vector((signed(img_fifo_data_out(15 downto 8)) * signed(kern_reg_0_3_s(15 downto 8)) +
-                                                          signed(img_fifo_data_out(23 downto 16)) * signed(kern_reg_0_3_s(23 downto 16)) +
-                                                          signed(img_fifo_data_out(31 downto 24)) * signed(kern_reg_0_3_s(31 downto 24)))(31 downto 0));
-                comp_head <= 1;
-                process_fifo_write_en <= '1';
-                img_fifo_read_en <= '1';
-
-            elsif comp_head = 1 then
-                process_fifo_data_in <= std_logic_vector((signed(img_fifo_data_out(15 downto 8)) * signed(kern_reg_4_7_s(15 downto 8)) +
-                                                          signed(img_fifo_data_out(23 downto 16)) * signed(kern_reg_4_7_s(23 downto 16)) +
-                                                          signed(img_fifo_data_out(31 downto 24)) * signed(kern_reg_4_7_s(31 downto 24)))(31 downto 0));
-                comp_head <= 2;
-                process_fifo_write_en <= '1';
-                img_fifo_read_en <= '1';
-
-            elsif comp_head = 2 then
-                process_fifo_data_in <= std_logic_vector((signed(img_fifo_data_out(15 downto 8)) * signed(kern_reg_8_s(15 downto 8)) +
-                                                          signed(img_fifo_data_out(23 downto 16)) * signed(kern_reg_8_s(23 downto 16)) +
-                                                          signed(img_fifo_data_out(31 downto 24)) * signed(kern_reg_8_s(31 downto 24)))(31 downto 0));
-                comp_head <= 3;
-                process_fifo_write_en <= '1';
-                img_fifo_read_en <= '1';
-            elsif comp_head = 3 then
-                comp_head <= 0;
+                    if comp_head = 0 then
+                        temp_result := signed(img_fifo_data_out(15 downto 8)) * signed(kern_reg_0_3_s(15 downto 8)) +
+                                       signed(img_fifo_data_out(23 downto 16)) * signed(kern_reg_0_3_s(23 downto 16)) +
+                                       signed(img_fifo_data_out(31 downto 24)) * signed(kern_reg_0_3_s(31 downto 24))
+                                       + temp_result;
+                        comp_head <= 1;
+                        img_fifo_read_en <= '1';
+                
+                    elsif comp_head = 1 then
+                        temp_result := signed(img_fifo_data_out(15 downto 8)) * signed(kern_reg_4_7_s(15 downto 8)) +
+                                       signed(img_fifo_data_out(23 downto 16)) * signed(kern_reg_4_7_s(23 downto 16)) +
+                                       signed(img_fifo_data_out(31 downto 24)) * signed(kern_reg_4_7_s(31 downto 24)) +
+                                        temp_result;
+                        comp_head <= 2;
+                        img_fifo_read_en <= '1';
+                
+                    elsif comp_head = 2 then
+                        temp_result := signed(img_fifo_data_out(15 downto 8)) * signed(kern_reg_8_s(15 downto 8)) +
+                                       signed(img_fifo_data_out(23 downto 16)) * signed(kern_reg_8_s(23 downto 16)) +
+                                       signed(img_fifo_data_out(31 downto 24)) * signed(kern_reg_8_s(31 downto 24))
+                                        + temp_result;
+                        out_fifo_data_in(15 downto 0) <= std_logic_vector(temp_result);
+                        comp_head <= 3;
+                        img_fifo_read_en <= '1';
+                        out_fifo_write_en <= '1';
+                    elsif comp_head = 3 then
+                        temp_result := (others => '0');
+                        comp_head <= 0;                        
             end if;
         end if;            
                     
     end if;
 end process;
-            
-
-RESULT_FIFO : process(clk_i, reset_s)
-begin
-    if reset_s = '1' then
-        out_fifo_write_en <= '0';
-        process_fifo_read_en <= '0';
-        out_head <= 0;
-        out_data_s <= (others => '0');
-        out_fifo_data_in <= (others => '0');
-    elsif rising_edge(clk_i) then
-        out_fifo_write_en <= '0';
-        process_fifo_read_en <= '0';
-
-        if process_fifo_empty = '0' and out_fifo_full = '0' then
-            if out_head = 0 then
-                out_data_s <= std_logic_vector(signed(out_data_s) + signed(process_fifo_data_out));
-                process_fifo_read_en <= '1';
-                out_head <= 1;
-            elsif out_head = 1 then
-                out_data_s <= std_logic_vector(signed(out_data_s) + signed(process_fifo_data_out));
-                process_fifo_read_en <= '1';
-                out_head <= 2;
-            elsif out_head = 2 then
-                out_data_s <= std_logic_vector(signed(out_data_s) + signed(process_fifo_data_out));
-                process_fifo_read_en <= '1';
-                out_head <= 3;
-            elsif out_head = 3 then
-                -- output the result to the output fifo
-                out_fifo_data_in <= out_data_s;
-                out_fifo_write_en <= '1';
-                out_head <= 4;
-            elsif out_head = 4 then
-                out_data_s <= (others => '0');
-                out_head <= 0;
-            end if;
-                
-        end if;
-        
-    end if;
-end process;
+           
 
 end rtl;
 
