@@ -65,6 +65,14 @@
          type = "String";
       }
    }
+   element qsys_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
 }
 ]]></parameter>
  <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
@@ -653,6 +661,11 @@
    version="18.1"
    start="clk_0.clk"
    end="hps_0.h2f_lw_axi_clock" />
+ <connection
+   kind="reset"
+   version="18.1"
+   start="clk_0.clk_reset"
+   end="IP_axi_0.reset_sink" />
  <connection
    kind="reset"
    version="18.1"

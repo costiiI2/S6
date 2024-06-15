@@ -235,8 +235,8 @@ architecture top of DE1_SoC_top is
             -- LED
             hps_io_0_hps_io_gpio_inst_GPIO53  : inout std_logic                     := 'X' ;             -- hps_io_gpio_inst_GPIO53
 				
-			-- Clock
-			clk_clk                             : in    std_logic                     := 'X'      -- clk
+-- Clock
+				clk_clk                             : in    std_logic                     := 'X'      -- clk
 			
         );
     end component qsys_system;
@@ -285,6 +285,7 @@ begin
 		-- LED
 		hps_io_0_hps_io_gpio_inst_GPIO53  => HPS_LED_io,
 		
+
 		-- Clock
 		clk_clk                           	=> CLOCK_50_i
     );

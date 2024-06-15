@@ -28,17 +28,17 @@ OCFLAGS		:= -O srec
 
 # Files
 HDRS		:=
-SRCS		:= ../src/exceptions.c ../src/fpga_gpio.c ../src/modules/de1soc.c
+SRCS		:= ../src/fpga_gpio.c ../src/image.c
 OBJS		:= $(patsubst %, %.o, $(SRCS))
 
 # Targets
-compile: exceptions.srec
+compile: fpga_gpio.srec
 
-exceptions.srec: exceptions.axf
+fpga_gpio.srec: fpga_gpio.axf
 	$(RM) $@
 	$(OC) $(OCFLAGS) $< $@
 
-exceptions.axf: $(OBJS)
+fpga_gpio.axf: $(OBJS)
 	$(RM) $@
 	$(CC) $(LDFLAGS) $(OBJS) -o $@
 
@@ -51,5 +51,5 @@ exceptions.axf: $(OBJS)
 	$(AS) $(ASFLAGS) $< -o $@
 
 clean:
-	$(RM) exceptions.srec exceptions.axf $(OBJS)
+	$(RM) fpga_gpio.srec fpga_gpio.axf $(OBJS)
 

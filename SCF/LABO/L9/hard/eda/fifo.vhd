@@ -52,7 +52,7 @@ ENTITY fifo IS
 		q		: OUT STD_LOGIC_VECTOR (31 DOWNTO 0);
 		usedw		: OUT STD_LOGIC_VECTOR (7 DOWNTO 0)
 	);
-END fifo
+END fifo;
 
 
 ARCHITECTURE SYN OF fifo IS
