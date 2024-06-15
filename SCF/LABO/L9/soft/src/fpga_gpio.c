@@ -29,7 +29,7 @@
 
 int __auto_semihosting;
 
-#define DRIVER_AVAILABLE 0
+#define DRIVER_AVAILABLE 1
 
 #define DEBUG_PRINT 1
 
@@ -57,6 +57,7 @@ static int fd;
 #define IMG_OFFSET 0x10
 
 #define RETURN_OFFSET 0x1C
+#define SIZE_OFFSET 0x18
 
 #define READ_WRITE_OFFSET 0x20
 
@@ -117,7 +118,7 @@ void write_register(uint32_t index, uint32_t value)
     if (err < 0)
     {
         printf("Error while writing register\n");
-        error = 1;
+        err = 1;
     }
 
     // set value
@@ -125,7 +126,7 @@ void write_register(uint32_t index, uint32_t value)
     if (err < 0)
     {
         printf("Error while writing register\n");
-        error = 1;
+        err = 1;
     }
 #else
 
@@ -146,7 +147,7 @@ uint32_t read_register(uint32_t index)
     if (err < 0)
     {
         printf("Error while reading register\n");
-        error = 1;
+        err = 1;
     }
 
     // get value
@@ -154,7 +155,7 @@ uint32_t read_register(uint32_t index)
     if (err < 0)
     {
         printf("Error while reading register\n");
-        error = 1;
+        err = 1;
     }
 
     return value;
@@ -181,10 +182,10 @@ int image[IMG_SIZE][IMG_SIZE] = {
 
 int can_read()
 {
-    uint8_t size_out = read_register(0x18) >> 24 & 0xFF;
-    #if DEBUG_PRINT
+    uint8_t size_out = read_register(SIZE_OFFSET) >> 24 & 0xFF;
+#if DEBUG_PRINT
     printf("size_out %d\n", size_out);
-    #endif
+#endif
     return size_out;
 }
 
@@ -272,8 +273,8 @@ void convolute_test()
         }
     }
 #if DEBUG_PRINT
-    printf("input fifo size %d\n", read_register(0x18) >> 8 & 0xFF);
-    printf("output fifo size %d\n", read_register(0x18) >> 24 & 0xFF);
+    printf("input fifo size %d\n", read_register(SIZE_OFFSET) >> 8 & 0xFF);
+    printf("output fifo size %d\n", read_register(SIZE_OFFSET) >> 24 & 0xFF);
 
     printf("starting last read\n");
 #endif
@@ -293,8 +294,10 @@ void convolute_test()
         }
     }
 
+#if DEBUG_PRINT
     printf(" J read %d - I read %d\n", j_read, i_read);
     printf("can_read %d\n", can_read());
+#endif
 
     for (int i = 0; i < IMG_SIZE; i++)
     {
@@ -313,25 +316,25 @@ void test_fifo()
         printf("Writing %x\n", i);
         write_register(0x14, i);
         printf("size %x\n",
-               read_register(0x18));
+               read_register(SIZE_OFFSET));
     }
     printf("----------------\n");
     printf("size %x\n",
-           read_register(0x18));
+           read_register(SIZE_OFFSET));
     printf("----------------\n");
     for (int i = 0; i < IMG_SIZE; i++)
     {
         printf("Reading %x\n",
                read_register(0x14));
         printf("size %x\n",
-               read_register(0x18));
+               read_register(SIZE_OFFSET));
     }
 }
 
 struct img_1D_t *convolution_1D(struct img_1D_t *img)
 {
     struct img_1D_t *result_img;
-    int i, j, k;
+    int i, j;
     int width = img->width;
     int height = img->height;
     int components = img->components;
@@ -366,9 +369,9 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
         // Start convolution
         int i_read = 1;
         int j_read = 1;
-        for (j = 1; j < img->height - 1;j++)
+        for (j = 1; j < img->height - 1; j++)
         {
-            for (i = 1; i < img->width - 1;i++)
+            for (i = 1; i < img->width - 1; i++)
             {
                 uint8_t pixels[9] = {0};
                 int pixel_count = 0;
@@ -409,20 +412,20 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
                             break;
                         }
                     }
+                }
 
-                    if (can_read())
-                    {
+                if (can_read())
+                {
 
-                        int result = read_register(RETURN_OFFSET);
+                    int result = read_register(RETURN_OFFSET);
 #if DEBUG_PRINT
-                        printf("Read %d %d = %d  \n", j_read, i_read, result);
+                    printf("Read %d %d = %d  \n", j_read, i_read, result);
 #endif
-                        (*result_channels[c])[j_read * img->width + i_read++] = result;
-                        if (i_read == IMG_SIZE - 1)
-                        {
-                            i_read = 1;
-                            j_read++;
-                        }
+                    (*result_channels[c])[j_read * img->width + i_read++] = result;
+                    if (i_read == img->width - 1)
+                    {
+                        i_read = 1;
+                        j_read++;
                     }
                 }
             }
@@ -431,15 +434,17 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
         // Wait for all data to be read
         while (can_read())
         {
-            
-                int result = read_register(RETURN_OFFSET);
-                printf("Reading data at %d %d = %d after \n", i_read, j_read, result);
-                (*result_channels[c])[j_read * img->width + i_read++] = result;
-                if (i_read == img->width - 1)
-                {
-                    i_read = 1;
-                    j_read++;
-                }
+
+            int result = read_register(RETURN_OFFSET);
+#if DEBUG_PRINT
+            printf("Reading data at %d %d = %d after \n", i_read, j_read, result);
+#endif
+            (*result_channels[c])[j_read * img->width + i_read++] = result;
+            if (i_read == img->width - 1)
+            {
+                i_read = 1;
+                j_read++;
+            }
         }
     }
 
@@ -494,6 +499,12 @@ int setup()
     {
         printf("CST found\n");
     }
+
+    //prepare fifo 3 elements in and 1 out
+    write_register(IMG_OFFSET, 0);
+    write_register(IMG_OFFSET, 0);
+    write_register(IMG_OFFSET, 0);
+    read_register(RETURN_OFFSET);
 
     return 0;
 }
@@ -553,13 +564,16 @@ int main(int argc, char **argv)
     }
     switch (argc)
     {
+    case 1:
+        printf("\nFifo test\n");
+        test_fifo();
+        break;
     case 2:
         select_kernel(atoi(argv[1]));
         set_kernel();
         printf("Test mode\n");
         convolute_test();
-        printf("\nFifo test\n");
-        test_fifo();
+
         break;
     case 4:
         select_kernel(atoi(argv[1]));
@@ -573,8 +587,6 @@ int main(int argc, char **argv)
         close(fd);
         return EXIT_FAILURE;
     }
-
-    read_kernel();
 
 #if DRIVER_AVAILABLE == 0
     munmap(base, MAP_SIZE);
