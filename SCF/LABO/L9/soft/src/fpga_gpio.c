@@ -38,6 +38,8 @@ int __auto_semihosting;
 #else
 static void *base;
 #endif
+static int fd;
+
 
 #define MAP_SIZE 4096UL
 #define MAP_MASK (MAP_SIZE - 1)
@@ -71,7 +73,39 @@ static void *base;
 #define COMPONENT_RGB 3
 #define COMPONENT_GRAYSCALE 1
 
-static int fd;
+#define KERNEL_COUNT 4
+#define KERNEL_HEIGHT 3
+#define KERNEL_WIDTH 3
+
+static const uint8_t kernel[KERNEL_HEIGHT][KERNEL_WIDTH];
+
+const uint8_t kernels[KERNEL_COUNT][KERNEL_HEIGHT][KERNEL_WIDTH] = {
+    /* Identity */
+    {
+        {0, 0, 0},
+        {0, 1, 0},
+        {0, 0, 0}
+    },
+    /* Edge detection */
+    {
+        {0, 1, 0},
+        {1, -4, 1},
+        {0, 1, 0}
+    },
+    /* Sharpen */
+    {
+        {0, -1, 0},
+        {-1, 5, -1},
+        {0, -1, 0}
+    },
+    /* Box blur */
+    {
+        {1, 1, 1},
+        {1, 1, 1},
+        {1, 1, 1}
+    }
+};
+
 void write_register(uint32_t index, uint32_t value)
 {
 
@@ -151,10 +185,6 @@ int convolved_image[IMG_SIZE][IMG_SIZE] = {
     {0, 8, 9, 8, 0},
     {0, 0, 0, 0, 0}};
 
-const uint8_t kernel[KERNEL_HEIGHT][KERNEL_WIDTH] = {
-    {0, 0, 0},
-    {0,1,0},
-    {0,0,0}};
 
 int can_read()
 {
@@ -169,6 +199,17 @@ int can_read()
 int can_write()
 {
     return read_register(READ_WRITE_OFFSET) & WRITE_BIT;
+}
+
+
+void select_kernel(uint8_t kernel_index) {
+    if (kernel_index >= KERNEL_COUNT) {
+        printf("Invalid kernel index\n");
+        return;
+    }
+
+    kernel = kernels[kernel_index];
+
 }
 
 void convolute_test()
@@ -239,10 +280,9 @@ void convolute_test()
         }
     }
 
-    while (j_read < (IMG_SIZE - 1) || timeout > 0)
+    while (can_read() && timeout > 0)
     {
-        if (can_read())
-        {
+       
             int result = read_register(RETURN_OFFSET);
 #if DEBUG_PRINT
             printf("Read %d %d = %d after \n", j_read, i_read, result);
@@ -257,11 +297,8 @@ void convolute_test()
             {
                 break;
             }
-        }
-        else
-        {
             timeout--;
-        }
+        
     }
 
     for (int i = 0; i < IMG_SIZE; i++)
@@ -273,8 +310,10 @@ void convolute_test()
         printf("\n");
     }
     can_read();
+}
 
-    for (int i = 0; i < IMG_SIZE; i++)
+void test_fifo(){
+        for (int i = 0; i < IMG_SIZE; i++)
     {
         printf("Writing %x\n", i);
        write_register(0x14, i);
@@ -432,12 +471,7 @@ int setup()
     {
         printf("CST found\n");
     }
-    printf("Setting kernel\n");
-    set_kernel();
-
-    // read kernel values
-    printf("Kernel values: ");
-    read_kernel();
+   
 
     return 0;
 }
@@ -497,11 +531,21 @@ size_t length = _SC_PAGE_SIZE,
         return EXIT_FAILURE;
     }
 
+    printf("Setting kernel\n");
+    select_kernel(argv[1]);
+    set_kernel();
+
+    // read kernel values
+    printf("Kernel values: ");
+    read_kernel();
+
     switch (argc)
     {
     case 1:
         printf("Test mode\n");
         convolute_test();
+        printf("\nFifo test\n");
+        test_fifo();
         break;
     case 3:
         printf("Image mode\n");
