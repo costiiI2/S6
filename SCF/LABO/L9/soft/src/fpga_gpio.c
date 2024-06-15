@@ -29,9 +29,9 @@
 
 int __auto_semihosting;
 
-#define DRIVER_AVAILABLE 0
+#define DRIVER_AVAILABLE 1
 
-#define DEBUG_PRINT 0
+#define DEBUG_PRINT 1
 
 #if DRIVER_AVAILABLE
 #include <sys/ioctl.h>
@@ -57,6 +57,7 @@ static int fd;
 #define IMG_OFFSET 0x10
 
 #define RETURN_OFFSET 0x1C
+#define SIZE_OFFSET 0x18
 
 #define READ_WRITE_OFFSET 0x20
 
@@ -117,7 +118,7 @@ void write_register(uint32_t index, uint32_t value)
     if (err < 0)
     {
         printf("Error while writing register\n");
-        error = 1;
+        err = 1;
     }
 
     // set value
@@ -125,7 +126,7 @@ void write_register(uint32_t index, uint32_t value)
     if (err < 0)
     {
         printf("Error while writing register\n");
-        error = 1;
+        err = 1;
     }
 #else
 
@@ -146,7 +147,7 @@ uint32_t read_register(uint32_t index)
     if (err < 0)
     {
         printf("Error while reading register\n");
-        error = 1;
+        err = 1;
     }
 
     // get value
@@ -154,7 +155,7 @@ uint32_t read_register(uint32_t index)
     if (err < 0)
     {
         printf("Error while reading register\n");
-        error = 1;
+        err = 1;
     }
 
     return value;
@@ -181,7 +182,7 @@ int image[IMG_SIZE][IMG_SIZE] = {
 
 int can_read()
 {
-    uint8_t size_out = read_register(0x18) >> 24 & 0xFF;
+    uint8_t size_out = read_register(SIZE_OFFSET) >> 24 & 0xFF;
 #if DEBUG_PRINT
     printf("size_out %d\n", size_out);
 #endif
@@ -272,8 +273,8 @@ void convolute_test()
         }
     }
 #if DEBUG_PRINT
-    printf("input fifo size %d\n", read_register(0x18) >> 8 & 0xFF);
-    printf("output fifo size %d\n", read_register(0x18) >> 24 & 0xFF);
+    printf("input fifo size %d\n", read_register(SIZE_OFFSET) >> 8 & 0xFF);
+    printf("output fifo size %d\n", read_register(SIZE_OFFSET) >> 24 & 0xFF);
 
     printf("starting last read\n");
 #endif
@@ -315,18 +316,18 @@ void test_fifo()
         printf("Writing %x\n", i);
         write_register(0x14, i);
         printf("size %x\n",
-               read_register(0x18));
+               read_register(SIZE_OFFSET));
     }
     printf("----------------\n");
     printf("size %x\n",
-           read_register(0x18));
+           read_register(SIZE_OFFSET));
     printf("----------------\n");
     for (int i = 0; i < IMG_SIZE; i++)
     {
         printf("Reading %x\n",
                read_register(0x14));
         printf("size %x\n",
-               read_register(0x18));
+               read_register(SIZE_OFFSET));
     }
 }
 
@@ -498,6 +499,12 @@ int setup()
     {
         printf("CST found\n");
     }
+
+    //prepare fifo 3 elements in and 1 out
+    write_register(IMG_OFFSET, 0);
+    write_register(IMG_OFFSET, 0);
+    write_register(IMG_OFFSET, 0);
+    read_register(RETURN_OFFSET);
 
     return 0;
 }
