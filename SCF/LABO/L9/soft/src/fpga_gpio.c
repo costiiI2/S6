@@ -22,6 +22,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
+
 #include "axi_lw.h"
 #include "image.h"
 
@@ -180,7 +182,9 @@ int image[IMG_SIZE][IMG_SIZE] = {
 int can_read()
 {
     uint8_t size_out = read_register(0x18) >> 24 & 0xFF;
+    #if DEBUG_PRINT
     printf("size_out %d\n", size_out);
+    #endif
     return size_out;
 }
 
@@ -189,7 +193,6 @@ int can_write()
     return read_register(READ_WRITE_OFFSET) & WRITE_BIT;
 }
 
-#include <string.h>
 void select_kernel(uint8_t kernel_index)
 {
     if (kernel_index >= KERNEL_COUNT)
@@ -268,10 +271,12 @@ void convolute_test()
             }
         }
     }
-
-    printf("sizes %d\n", read_register(0x18) >> 8 & 0xFF);
+#if DEBUG_PRINT
+    printf("input fifo size %d\n", read_register(0x18) >> 8 & 0xFF);
+    printf("output fifo size %d\n", read_register(0x18) >> 24 & 0xFF);
 
     printf("starting last read\n");
+#endif
 
     while (can_read())
     {
@@ -295,7 +300,7 @@ void convolute_test()
     {
         for (int j = 0; j < IMG_SIZE; j++)
         {
-            printf("%02d ", img[i][j]);
+            printf("%03d ", img[i][j]);
         }
         printf("\n");
     }
@@ -361,75 +366,72 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
         // Start convolution
         int i_read = 1;
         int j_read = 1;
-        for (j = 1; j < img->height - 1;)
+        for (j = 1; j < img->height - 1;j++)
         {
-            for (i = 1; i < img->width - 1;)
+            for (i = 1; i < img->width - 1;i++)
             {
                 uint8_t pixels[9] = {0};
-            int pixel_count = 0;
-            int matrix_count = 0;
-            int a = 0;
-            for (int k = 0; 1;)
-            {
-                if (pixel_count < 3 || k == 9)
+                int pixel_count = 0;
+                int matrix_count = 0;
+                int a = 0;
+                for (int k = 0; 1;)
                 {
-                    int tmp_i = i + (k / 3 - 1);
-                    int tmp_j = j + (k % 3 - 1);
-                    pixels[k] = image[tmp_j][tmp_i];
-                    pixel_count++;
-                    matrix_count++;
-                    k++;
-                }
+                    if (pixel_count < 3 || k == 9)
+                    {
+                        int tmp_i = i + (k / 3 - 1);
+                        int tmp_j = j + (k % 3 - 1);
+                        pixels[k] = (*channels[c])[tmp_j * img->width + tmp_i];
+                        pixel_count++;
+                        matrix_count++;
+                        k++;
+                    }
 
-                if (can_write() && (pixel_count >= 3 || k == 9))
-                {
-                    // If we have 4 or more pixels, or we have collected all 9 pixels, send them
-                    uint32_t pixel_data = 0;
-                    for (int p = 0; p < pixel_count; p++)
+                    if (can_write() && (pixel_count >= 3 || k == 9))
                     {
-                        pixel_data |= pixels[a++] << (24 - (8 * p));
-                    }
+                        // If we have 4 or more pixels, or we have collected all 9 pixels, send them
+                        uint32_t pixel_data = 0;
+                        for (int p = 0; p < pixel_count; p++)
+                        {
+                            pixel_data |= pixels[a++] << (24 - (8 * p));
+                        }
 #if DEBUG_PRINT
-                    printf("%d %d %d\n", (pixel_data >> 24) & 0xFF, (pixel_data >> 16) & 0xFF, (pixel_data >> 8) & 0xFF);
-                    if (k == 9)
-                    {
-                        printf("-----\n");
-                    }
+                        printf("%d %d %d\n", (pixel_data >> 24) & 0xFF, (pixel_data >> 16) & 0xFF, (pixel_data >> 8) & 0xFF);
+                        if (k == 9)
+                        {
+                            printf("-----\n");
+                        }
 #endif
 
-                    pixel_count = 0; // Reset the count for the next batch
-                    write_register(IMG_OFFSET, pixel_data);
-                    if (k == 9)
-                    {
-                        break;
+                        pixel_count = 0; // Reset the count for the next batch
+                        write_register(IMG_OFFSET, pixel_data);
+                        if (k == 9)
+                        {
+                            break;
+                        }
                     }
-                }
 
-                if (can_read())
-                {
-
-                    int result = read_register(RETURN_OFFSET);
-#if DEBUG_PRINT
-                    printf("Read %d %d = %d  \n", j_read, i_read, result);
-#endif
-                    (*result_channels[c])[j_read * img->width + i_read++] = result;
-                    if (i_read == IMG_SIZE - 1)
+                    if (can_read())
                     {
-                        i_read = 1;
-                        j_read++;
+
+                        int result = read_register(RETURN_OFFSET);
+#if DEBUG_PRINT
+                        printf("Read %d %d = %d  \n", j_read, i_read, result);
+#endif
+                        (*result_channels[c])[j_read * img->width + i_read++] = result;
+                        if (i_read == IMG_SIZE - 1)
+                        {
+                            i_read = 1;
+                            j_read++;
+                        }
                     }
                 }
             }
-                i++;
-            }
-            j++;
         }
 
         // Wait for all data to be read
-        while (j_read < img->height - 1)
+        while (can_read())
         {
-            if (can_read())
-            {
+            
                 int result = read_register(RETURN_OFFSET);
                 printf("Reading data at %d %d = %d after \n", i_read, j_read, result);
                 (*result_channels[c])[j_read * img->width + i_read++] = result;
@@ -438,7 +440,6 @@ struct img_1D_t *convolution_1D(struct img_1D_t *img)
                     i_read = 1;
                     j_read++;
                 }
-            }
         }
     }
 
@@ -458,7 +459,9 @@ void read_kernel()
     int k_0_3 = read_register(KERNEL_0_2_OFFSET);
     int k_4_7 = read_register(KERNEL_3_5_OFFSET);
     int k_8 = read_register(KERNEL_6_8_OFFSET);
-    printf("\n%d %d %d\n%d %d %d\n%d %d %d\n", (k_0_3 >> 24) & 0xFF, (k_0_3 >> 16) & 0xFF, (k_0_3 >> 8) & 0xFF, (k_4_7 >> 24) & 0xFF, (k_4_7 >> 16) & 0xFF, (k_4_7 >> 8) & 0xFF, (k_8 >> 24) & 0xFF, (k_8 >> 16) & 0xFF, (k_8 >> 8) & 0xFF);
+    printf("%03d %03d %03d\n", (k_0_3 >> 24) & 0xFF, (k_0_3 >> 16) & 0xFF, (k_0_3 >> 8) & 0xFF);
+    printf("%03d %03d %03d\n", (k_4_7 >> 24) & 0xFF, (k_4_7 >> 16) & 0xFF, (k_4_7 >> 8) & 0xFF);
+    printf("%03d %03d %03d\n", (k_8 >> 24) & 0xFF, (k_8 >> 16) & 0xFF, (k_8 >> 8) & 0xFF);
 }
 
 void print_img(struct img_1D_t *img)
@@ -468,7 +471,7 @@ void print_img(struct img_1D_t *img)
     {
         for (i = 0; i < img->width; i++)
         {
-            printf("%d ", img->r[j * img->width + i]);
+            printf("%03d ", img->r[j * img->width + i]);
         }
         printf("\n");
     }
@@ -548,26 +551,21 @@ int main(int argc, char **argv)
     {
         return EXIT_FAILURE;
     }
-
-    printf("Setting kernel\n");
-    select_kernel(4);
-    set_kernel();
-
-    // read kernel values
-    printf("Kernel values: ");
-    read_kernel();
-
     switch (argc)
     {
-    case 1:
+    case 2:
+        select_kernel(atoi(argv[1]));
+        set_kernel();
         printf("Test mode\n");
         convolute_test();
         printf("\nFifo test\n");
         test_fifo();
         break;
-    case 3:
+    case 4:
+        select_kernel(atoi(argv[1]));
+        set_kernel();
         printf("Image mode\n");
-        convolution_image(argv[1], argv[2]);
+        convolution_image(argv[2], argv[3]);
         break;
     default:
         fprintf(stderr, "Invalid number of arguments\n");
@@ -575,6 +573,8 @@ int main(int argc, char **argv)
         close(fd);
         return EXIT_FAILURE;
     }
+
+    read_kernel();
 
 #if DRIVER_AVAILABLE == 0
     munmap(base, MAP_SIZE);
