@@ -40,7 +40,6 @@ static void *base;
 #endif
 static int fd;
 
-
 #define MAP_SIZE 4096UL
 #define MAP_MASK (MAP_SIZE - 1)
 
@@ -67,7 +66,6 @@ static int fd;
 #define KERNEL_HEIGHT 3
 #define KERNEL_SIZE KERNEL_HEIGHT *KERNEL_WIDTH
 
-
 #define PNG_STRIDE_IN_BYTES 0
 #define COMPONENT_RGBA 4
 #define COMPONENT_RGB 3
@@ -84,30 +82,28 @@ const uint8_t kernels[KERNEL_COUNT][KERNEL_HEIGHT][KERNEL_WIDTH] = {
     {
         {0, 0, 0},
         {0, 1, 0},
-        {0, 0, 0}
-    },
+        {0, 0, 0}},
     /* Edge detection 1*/
     {
         {0, 1, 0},
         {1, -4, 1},
-        {0, 1, 0}
-    },
+        {0, 1, 0}},
     /* Sharpen 2*/
     {
         {0, -1, 0},
         {-1, 5, -1},
-        {0, -1, 0}
-    },
+        {0, -1, 0}},
     /* Box blur 3*/
     {
         {1, 1, 1},
         {1, 1, 1},
-        {1, 1, 1}
-    },
+        {1, 1, 1}},
     /* Gaussian blur 4*/
-    {1, 2, 1},
-    {2, 4, 2},
-    {1, 2, 1}
+    {
+        {1, 2, 1},
+        {2, 4, 2},
+        {1, 2, 1}
+        }
 };
 
 void write_register(uint32_t index, uint32_t value)
@@ -131,7 +127,7 @@ void write_register(uint32_t index, uint32_t value)
         error = 1;
     }
 #else
-    
+
     volatile uint32_t *reg = base + index;
     *reg = value;
 #endif
@@ -189,7 +185,6 @@ int convolved_image[IMG_SIZE][IMG_SIZE] = {
     {0, 8, 9, 8, 0},
     {0, 0, 0, 0, 0}};
 
-
 int can_read()
 {
     uint32_t reg = read_register(READ_WRITE_OFFSET);
@@ -205,20 +200,19 @@ int can_write()
     return read_register(READ_WRITE_OFFSET) & WRITE_BIT;
 }
 
-
-void select_kernel(uint8_t kernel_index) {
-    if (kernel_index >= KERNEL_COUNT) {
+void select_kernel(uint8_t kernel_index)
+{
+    if (kernel_index >= KERNEL_COUNT)
+    {
         printf("Invalid kernel index\n");
         return;
     }
 
     kernel = kernels[kernel_index];
-
 }
 
 void convolute_test()
 {
-
 
     int timeout = 10;
     int img[IMG_SIZE][IMG_SIZE] = {0};
@@ -255,14 +249,16 @@ void convolute_test()
                     }
 #if DEBUG_PRINT
                     printf("%d %d %d\n", (pixel_data >> 24) & 0xFF, (pixel_data >> 16) & 0xFF, (pixel_data >> 8) & 0xFF);
-                    if(k==9){
+                    if (k == 9)
+                    {
                         printf("-----\n");
                     }
 #endif
 
                     pixel_count = 0; // Reset the count for the next batch
                     write_register(IMG_OFFSET, pixel_data);
-                    if(k==9){
+                    if (k == 9)
+                    {
                         break;
                     }
                 }
@@ -284,25 +280,20 @@ void convolute_test()
         }
     }
 
-    while (can_read() && timeout > 0)
+    while (can_read() && timeout > 0 && (j_read < IMG_SIZE - 1))
     {
-       
-            int result = read_register(RETURN_OFFSET);
+
+        int result = read_register(RETURN_OFFSET);
 #if DEBUG_PRINT
-            printf("Read %d %d = %d after \n", j_read, i_read, result);
+        printf("Read %d %d = %d after \n", j_read, i_read, result);
 #endif
-            img[j_read][i_read++] = result;
-            if (i_read == IMG_SIZE - 1)
-            {
-                i_read = 1;
-                j_read++;
-            }
-            if (j_read == IMG_SIZE - 1)
-            {
-                break;
-            }
-            timeout--;
-        
+        img[j_read][i_read++] = result;
+        if (i_read == IMG_SIZE - 1)
+        {
+            i_read = 1;
+            j_read++;
+        }
+        timeout--;
     }
 
     for (int i = 0; i < IMG_SIZE; i++)
@@ -316,24 +307,25 @@ void convolute_test()
     can_read();
 }
 
-void test_fifo(){
-        for (int i = 0; i < IMG_SIZE; i++)
+void test_fifo()
+{
+    for (int i = 0; i < IMG_SIZE; i++)
     {
         printf("Writing %x\n", i);
-       write_register(0x14, i);
-       printf("size %x\n",
-        read_register(0x18));
+        write_register(0x14, i);
+        printf("size %x\n",
+               read_register(0x18));
     }
     printf("----------------\n");
-      printf("size %x\n",
-        read_register(0x18));
-        printf("----------------\n");
+    printf("size %x\n",
+           read_register(0x18));
+    printf("----------------\n");
     for (int i = 0; i < IMG_SIZE; i++)
     {
         printf("Reading %x\n",
-        read_register(0x14));
+               read_register(0x14));
         printf("size %x\n",
-        read_register(0x18));
+               read_register(0x18));
     }
 }
 
@@ -475,7 +467,6 @@ int setup()
     {
         printf("CST found\n");
     }
-   
 
     return 0;
 }
@@ -497,7 +488,6 @@ void convolution_image(char *img_path, char *output_path)
     printf("Printing result\n");
     print_img(result_img);
 #endif
-
 }
 
 int main(int argc, char **argv)
@@ -514,7 +504,7 @@ int main(int argc, char **argv)
     }
 
 #if DRIVER_AVAILABLE == 0
-size_t length = _SC_PAGE_SIZE,
+    size_t length = _SC_PAGE_SIZE,
            mapped_length;
     off_t offset = AXI_LW_HPS_FPGA_BASE_ADD,
           pge_offset;
@@ -525,9 +515,9 @@ size_t length = _SC_PAGE_SIZE,
     /* Real length considers the offset and lower page difference */
     mapped_length = length + offset - pge_offset;
 
-   base = mmap(NULL, mapped_length,
-                      PROT_READ | PROT_WRITE,
-                      MAP_SHARED, fd, pge_offset);
+    base = mmap(NULL, mapped_length,
+                PROT_READ | PROT_WRITE,
+                MAP_SHARED, fd, pge_offset);
 #endif
 
     if (setup() < 0)
@@ -562,7 +552,7 @@ size_t length = _SC_PAGE_SIZE,
         return EXIT_FAILURE;
     }
 
-#if DRIVER_AVAILABLE==0
+#if DRIVER_AVAILABLE == 0
     munmap(base, MAP_SIZE);
 #endif
     close(fd);
