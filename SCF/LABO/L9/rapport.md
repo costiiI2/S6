@@ -70,6 +70,8 @@ Ce laboratoire va nous permettre de développer de A à Z un système complet po
 
 Notre objectif est de réaliser une convolution sur une image en utilisant un noyau de convolution de taille 3x3, en utilisant un FPGA.
 
+Nos test on été effectués avec un image de taille maximale de 348x348, il se peux qu'avec des images plus grandes, le programme ne fonctionne pas correctement. les images doivent être des .png comme pour nos tests.
+
 Pour ce faire, nous allons utiliser la DE1-SoC.
 
 Notre première étape est de réaliser une IP qui va permettre de réaliser la convolution, nous somme partie sur une IP qui utilise des FIFO pour stocker les valeurs de l'image et de registres pour stocker les valeurs du noyau.
@@ -78,6 +80,7 @@ Dés que les données sont dans la FIFO d'entrée, on peux commencer les calculs
 
 Nous utilisons des FIFO de 32 bit pour stocker 3 pixels de l'image à la fois, et des registres de 32 bit pour stocker les valeurs du noyau. Ceci simplifie le calcul de la convolution. Chaque ligne calculée est stockée dans une FIFO de sortie et pour finir cette FIFO est lue 3 fois d'affilée pour obtenir les 3 valeurs de la convolution on les additionne et on les stocke dans une FIFO de sortie. Cette dernière FIFO est donc lue par notre utilisateur pour obtenir le valeur de la convolution.
 
+\pagebreak
 ## **Conception**
 
 voici la liste des registres et des FIFO utilisées dans notre IP:
@@ -102,6 +105,7 @@ Comment ce déroule la convolution:
 2. Une fois le noyau chargé, l'utilisateur peux commencer à charger les valeurs de l'image dans la FIFO d'entrée cest données doivent être chargées par 3 pixels, c-à-dire la première ligne du segment 3x3 que l'on va convoluer, puis la deuxième ligne et enfin la troisième ligne.
 3. Une fois 3 pixels chargés, le calcul de la convolution commence, on multiplie les valeurs de l'image par les valeurs du noyau et on additionne le tout pour obtenir la valeur de la convolution. Cette dernière est disponible que lorsque les 3 lignes ont été calculées. Si les données ne sont pas encore prêtes, l'utilisateur peux attendre ou charger de nouvelles données tant que la FIFO d'entrée n'est pas pleine. Avant chaque lecture et écriture, l'utilisateur doit vérifier que la FIFO est prête à être lue ou écrite.
 
+\pagebreak
 
 Des registres de contrôle sont utilisés pour vérifier si les FIFO sont prêtes à être lues ou écrites. En lisant a l'offset 0x20, si la FIFO est prête à être lue, le deuxième bit est à 1, si la FIFO est prête à être écrite, le premier bit est à 1.
 Les 4 bits suivants sont utilisés pour voir le status des FIFO. De la même manière, En lisant a l'offset 0x18, on peut lire la taille actuelle des FIFO.
@@ -129,15 +133,18 @@ L'utilisateur doit suivre les étapes suivantes pour réaliser une convolution:
 4. Lire la valeur de la convolution.
 5. Répéter les étapes 2 à 4 jusqu'à ce que toutes les valeurs de l'image aient été lues.
 
+\pagebreak
 
 ## **VHDL**
 
 Nous utilisons des FIFO de Intel pour stocker les valeurs de l'image et de la convolution, voici un exemple de la déclaration d'une FIFO, pour une FIFO de 256x32:
 
-´´´vhdl
--- definition of the scfifo 256x32
+
+```vhdl
+
 scfifo_component : scfifo
-	GENERIC MAP (
+	
+    GENERIC MAP (
 		add_ram_output_register => "ON",
 		intended_device_family => "Cyclone V",
 		lpm_numwords => 256,
@@ -160,7 +167,8 @@ scfifo_component : scfifo
 		q => sub_wire2,
 		usedw => sub_wire3
 	);
-´´´
+```
+
 
 Cette fifo est importée dans notre IP et utilisée pour stocker les valeurs de l'image et de la convolution.
 
@@ -227,7 +235,9 @@ Le driver est basé sur celui d'un labo précédent, il a été modifié pour co
 
 Il utilise les read et write pour communiquer avec notre IP et ioctl pour modifier les valeurs aux quelles on souhaite accéder.
 
-Les offsets sont donc les suivants: pour lire:
+\pagebreak
+
+Les offsets sont donc les suivants pour lire:
 
 |offset|nom|taille|description|
 |---|---|---|---|
@@ -262,9 +272,9 @@ make
 ```
 Puis il sera copié sur la carte SD de la DE1-SoC pour être utilisé.
 
-´´´bash
+```bash
 cp convolution.ko <path_SD>
-´´´
+```
 
 Puis une fois sur la carte, il sera chargé avec la commande suivante:
 
@@ -285,29 +295,29 @@ Plusieurs define sont à disposition pour choisir le mode d'utilisation avec ou 
 Pour lancer le programme il faut suivre les étapes suivantes depuis la DE1-SoC:
 
 ceci va lancer la convolution sur une image de test fournie.
-´´´bash
+```bash
 ./conv <kernel_id> <source_image> <destination_image>
-´´´
+```
 
 avec la ligne suivante on peux tester la convolution sur une image de 5x5 pixels fournie avec le programme:
-´´´bash
+```bash
 ./conv <kernel_id>
-´´´
+```
 ceci va lancer la convolution sur l'image suivante avec le noyau de convolution choisi par l'utilisateur:
-´´´c
+```c
 int image[IMG_SIZE][IMG_SIZE] = {
     {0, 0, 0, 0, 0},
     {0, 1, 1, 1, 0},
     {0, 1, 0, 1, 0},
     {0, 1, 1, 1, 0},
     {0, 0, 0, 0, 0}};
-´´´
+```
 
 et avec cette dernière ligne on peux tester le fonctionnement de la FIFO de test:
 
-´´´bash
+```bash
 ./conv
-´´´
+```
 
 Le kernel de convolution est déjà chargé dans le programme, il est possible de le modifier en modifiant le code source du programme. Les make files sont fournis pour le driver et le programme utilisateur.
 
