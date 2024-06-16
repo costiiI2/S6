@@ -48,18 +48,30 @@ static int fd;
 
 #define ITF_REG(_x_) *(volatile uint32_t *)((AXI_LW_HPS_FPGA_BASE_ADD) + _x_)
 
+#if DRIVER_AVAILABLE == 0
 #define CNST 0x0
 
 #define KERNEL_0_2_OFFSET 0x4
 #define KERNEL_3_5_OFFSET 0x8
 #define KERNEL_6_8_OFFSET 0xC
-
 #define IMG_OFFSET 0x10
-
-#define RETURN_OFFSET 0x1C
+#define TEST_FIR_OFFSET 0x14
 #define SIZE_OFFSET 0x18
-
+#define RETURN_OFFSET 0x1C
 #define READ_WRITE_OFFSET 0x20
+#else
+
+#define KERNEL_0_2_OFFSET 0x0
+#define KERNEL_3_5_OFFSET 0x1
+#define KERNEL_6_8_OFFSET 0x2
+#define TEST_FIR_OFFSET 0x3
+#define SIZE_OFFSET 0x4 // read only
+#define IMG_OFFSET 0x4  // write only
+#define RETURN_OFFSET 0x5
+#define READ_WRITE_OFFSET 0x6
+#define CNST 0x7
+
+#endif
 
 #define READ_BIT 0x2
 #define WRITE_BIT 0x1
@@ -275,7 +287,6 @@ void convolute_test()
 #if DEBUG_PRINT
     printf("input fifo size %d\n", read_register(SIZE_OFFSET) >> 8 & 0xFF);
     printf("output fifo size %d\n", read_register(SIZE_OFFSET) >> 24 & 0xFF);
-
     printf("starting last read\n");
 #endif
 
@@ -314,7 +325,7 @@ void test_fifo()
     for (int i = 0; i < IMG_SIZE; i++)
     {
         printf("Writing %x\n", i);
-        write_register(0x14, i);
+        write_register(TEST_FIR_OFFSET, i);
         printf("size %x\n",
                read_register(SIZE_OFFSET));
     }
@@ -325,7 +336,7 @@ void test_fifo()
     for (int i = 0; i < IMG_SIZE; i++)
     {
         printf("Reading %x\n",
-               read_register(0x14));
+               read_register(TEST_FIR_OFFSET));
         printf("size %x\n",
                read_register(SIZE_OFFSET));
     }
@@ -500,7 +511,7 @@ int setup()
         printf("CST found\n");
     }
 
-    //prepare fifo 3 elements in and 1 out
+    // prepare fifo 3 elements in and 1 out
     write_register(IMG_OFFSET, 0);
     write_register(IMG_OFFSET, 0);
     write_register(IMG_OFFSET, 0);

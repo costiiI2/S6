@@ -288,7 +288,8 @@ begin
     -- 0x0C	    (3) | kernel[8],-,-,-         | R/W
     -- --image registers--------------------------------
     -- 0x10	    (4) | set img[0-3]      	  | W
-
+    -- 0x14	    (5) | set test_fifo      | R/W
+    -- 0x18	    (6) |size of img, test_fifo, out_fifo | R
     -- 0x1C     (7) | return value            | R
     -- --control registers------------------------------
     -- 0x20     (8) | Can write (1) / Can read (0) | R
